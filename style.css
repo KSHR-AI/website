@@ -6,29 +6,69 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     margin: 0;
     padding: 20px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: #fefefe;
     min-height: 100vh;
+    font-weight: 400;
+    line-height: 1.6;
 }
 
 header {
-    text-align: center;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 40px;
-    padding: 20px 0;
+    padding: 20px 20px 0 20px;
+    max-width: 1400px;
+    margin: 0 auto 40px auto;
 }
 
 h1 {
     font-size: 3rem;
-    font-weight: 700;
+    font-weight: 600;
     margin: 0;
-    color: #2c3e50;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    color: #333;
+    letter-spacing: -0.02em;
 }
 
-.subtitle {
-    font-size: 1.1rem;
-    color: #7f8c8d;
-    margin: 10px 0 0 0;
-    font-weight: 400;
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.header-right {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: right;
+}
+
+.author-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.author-name {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+    min-width: 110px;
+}
+
+.social-links {
+    display: flex;
+    gap: 8px;
+}
+
+.social-links a {
+    font-size: 0.85rem;
+    color: #999;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.social-links a:hover {
+    color: #333;
 }
 
 .board-container {
@@ -91,25 +131,27 @@ h1 {
 }
 
 .sticky-note h3 {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 600;
-    margin: 0 0 10px 0;
-    color: #2c3e50;
+    margin: 0 0 8px 0;
+    color: #333;
     line-height: 1.3;
+    letter-spacing: -0.01em;
 }
 
 .sticky-note .author {
-    font-size: 0.9rem;
-    color: #7f8c8d;
-    margin: 0 0 15px 0;
+    font-size: 0.85rem;
+    color: #666;
+    margin: 0 0 12px 0;
     font-weight: 500;
-    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .sticky-note .preview {
     font-size: 0.9rem;
-    color: #34495e;
-    line-height: 1.4;
+    color: #555;
+    line-height: 1.5;
     margin: 0;
     flex-grow: 1;
     overflow: hidden;
@@ -204,6 +246,107 @@ h1 {
     font-size: 1.1rem;
 }
 
+/* Color Palette Selector */
+.palette-selector {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 100;
+}
+
+.palette-selector h4 {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: #333;
+    font-weight: 600;
+    text-align: center;
+}
+
+.palette-options {
+    display: flex;
+    gap: 8px;
+}
+
+.palette-option {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.palette-option:hover {
+    transform: scale(1.1);
+    border-color: #333;
+}
+
+.palette-option.active {
+    border-color: #333;
+    transform: scale(1.15);
+}
+
+.palette-option.warm {
+    background: linear-gradient(45deg, #ffd700, #ffb6c1, #98fb98);
+}
+
+.palette-option.cool {
+    background: linear-gradient(45deg, #87ceeb, #dda0dd, #f0e68c);
+}
+
+.palette-option.soft {
+    background: linear-gradient(45deg, #a8e6cf, #dcedc8, #f8bbd9);
+}
+
+.palette-option.pastel {
+    background: linear-gradient(45deg, #ffe4e1, #e0ffff, #f0fff0);
+}
+
+.palette-option.blush {
+    background: linear-gradient(45deg, #FF99C8, #FCF6BD, #D0F4DE);
+}
+
+/* Color Palette Classes */
+.palette-warm .sticky-note:nth-child(6n+1) { background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); }
+.palette-warm .sticky-note:nth-child(6n+2) { background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 100%); }
+.palette-warm .sticky-note:nth-child(6n+3) { background: linear-gradient(135deg, #98fb98 0%, #90ee90 100%); }
+.palette-warm .sticky-note:nth-child(6n+4) { background: linear-gradient(135deg, #ffa07a 0%, #ff7f50 100%); }
+.palette-warm .sticky-note:nth-child(6n+5) { background: linear-gradient(135deg, #ffffe0 0%, #fffacd 100%); }
+.palette-warm .sticky-note:nth-child(6n+6) { background: linear-gradient(135deg, #ffe4b5 0%, #ffdead 100%); }
+
+.palette-cool .sticky-note:nth-child(6n+1) { background: linear-gradient(135deg, #87ceeb 0%, #add8e6 100%); }
+.palette-cool .sticky-note:nth-child(6n+2) { background: linear-gradient(135deg, #dda0dd 0%, #e6e6fa 100%); }
+.palette-cool .sticky-note:nth-child(6n+3) { background: linear-gradient(135deg, #b0e0e6 0%, #afeeee 100%); }
+.palette-cool .sticky-note:nth-child(6n+4) { background: linear-gradient(135deg, #d8bfd8 0%, #dda0dd 100%); }
+.palette-cool .sticky-note:nth-child(6n+5) { background: linear-gradient(135deg, #f0e68c 0%, #fff8dc 100%); }
+.palette-cool .sticky-note:nth-child(6n+6) { background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%); }
+
+.palette-soft .sticky-note:nth-child(6n+1) { background: linear-gradient(135deg, #a8e6cf 0%, #c8e6c9 100%); }
+.palette-soft .sticky-note:nth-child(6n+2) { background: linear-gradient(135deg, #f8bbd9 0%, #f48fb1 100%); }
+.palette-soft .sticky-note:nth-child(6n+3) { background: linear-gradient(135deg, #dcedc8 0%, #f0f4c3 100%); }
+.palette-soft .sticky-note:nth-child(6n+4) { background: linear-gradient(135deg, #b3e5fc 0%, #81d4fa 100%); }
+.palette-soft .sticky-note:nth-child(6n+5) { background: linear-gradient(135deg, #ffcdd2 0%, #f8bbd9 100%); }
+.palette-soft .sticky-note:nth-child(6n+6) { background: linear-gradient(135deg, #e1bee7 0%, #d1c4e9 100%); }
+
+.palette-pastel .sticky-note:nth-child(6n+1) { background: linear-gradient(135deg, #ffe4e1 0%, #fff0f5 100%); }
+.palette-pastel .sticky-note:nth-child(6n+2) { background: linear-gradient(135deg, #e0ffff 0%, #f0ffff 100%); }
+.palette-pastel .sticky-note:nth-child(6n+3) { background: linear-gradient(135deg, #f0fff0 0%, #f5fffa 100%); }
+.palette-pastel .sticky-note:nth-child(6n+4) { background: linear-gradient(135deg, #ffefd5 0%, #fff8dc 100%); }
+.palette-pastel .sticky-note:nth-child(6n+5) { background: linear-gradient(135deg, #e6e6fa 0%, #f8f8ff 100%); }
+.palette-pastel .sticky-note:nth-child(6n+6) { background: linear-gradient(135deg, #fffacd 0%, #ffffe0 100%); }
+
+.palette-blush .sticky-note:nth-child(6n+1) { background: linear-gradient(135deg, #FF99C8 0%, #ffb3d4 100%); }
+.palette-blush .sticky-note:nth-child(6n+2) { background: linear-gradient(135deg, #FCF6BD 0%, #fdf8c7 100%); }
+.palette-blush .sticky-note:nth-child(6n+3) { background: linear-gradient(135deg, #D0F4DE 0%, #d8f6e3 100%); }
+.palette-blush .sticky-note:nth-child(6n+4) { background: linear-gradient(135deg, #A9DEF9 0%, #bbe5fa 100%); }
+.palette-blush .sticky-note:nth-child(6n+5) { background: linear-gradient(135deg, #E4C1F9 0%, #e8cdfb 100%); }
+.palette-blush .sticky-note:nth-child(6n+6) { background: linear-gradient(135deg, #FF99C8 0%, #FCF6BD 100%); }
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .board-container {
@@ -212,8 +355,24 @@ h1 {
         padding: 10px;
     }
     
+    header {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+        margin: 0 auto 30px auto;
+        padding: 10px 10px 0 10px;
+    }
+    
     h1 {
         font-size: 2.5rem;
+    }
+    
+    .header-right {
+        text-align: center;
+    }
+    
+    .author-line {
+        justify-content: center;
     }
     
     .sticky-note {
@@ -230,6 +389,13 @@ h1 {
     .modal-content h2 {
         font-size: 1.6rem;
     }
+    
+    .palette-selector {
+        bottom: 10px;
+        right: 10px;
+        padding: 10px;
+        transform: scale(0.8);
+    }
 }
 
 @media (max-width: 480px) {
@@ -240,6 +406,15 @@ h1 {
     
     h1 {
         font-size: 2rem;
+    }
+    
+    .author-line {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .author-name {
+        min-width: auto;
     }
     
     .sticky-note {

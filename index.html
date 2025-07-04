@@ -14,8 +14,25 @@
 </head>
 <body>
     <header>
-        <h1>KSHR</h1>
-        <p class="subtitle">Mayank and Aman Kishore exploring the future</p>
+        <div class="header-left">
+            <h1>KSHR</h1>
+        </div>
+        <div class="header-right">
+            <div class="author-line">
+                <span class="author-name">Aman Kishore:</span>
+                <div class="social-links">
+                    <a href="https://x.com/_amankishore" target="_blank">@x</a>
+                    <a href="mailto:aman@kshr.ai">email</a>
+                </div>
+            </div>
+            <div class="author-line">
+                <span class="author-name">Mayank Kishore:</span>
+                <div class="social-links">
+                    <a href="https://x.com/_mayankkishore" target="_blank">@x</a>
+                    <a href="mailto:mayank@kshr.ai">email</a>
+                </div>
+            </div>
+        </div>
     </header>
 
     <div class="board-container">
@@ -112,6 +129,18 @@
         </div>
     </div>
 
+    <!-- Color Palette Selector -->
+    <div class="palette-selector">
+        <h4>Colors</h4>
+        <div class="palette-options">
+            <div class="palette-option warm active" data-palette="warm" title="Warm"></div>
+            <div class="palette-option cool" data-palette="cool" title="Cool"></div>
+            <div class="palette-option soft" data-palette="soft" title="Soft"></div>
+            <div class="palette-option pastel" data-palette="pastel" title="Pastel"></div>
+            <div class="palette-option blush" data-palette="blush" title="Blush"></div>
+        </div>
+    </div>
+
     <script>
         // Modal functionality
         const modal = document.getElementById('article-modal');
@@ -176,6 +205,27 @@
             if (event.target === modal) {
                 modal.style.display = 'none';
             }
+        });
+
+        // Palette selector functionality
+        const boardContainer = document.querySelector('.board-container');
+        const paletteOptions = document.querySelectorAll('.palette-option');
+
+        // Set initial palette
+        boardContainer.className = 'board-container palette-warm';
+
+        paletteOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove active class from all options
+                paletteOptions.forEach(opt => opt.classList.remove('active'));
+                
+                // Add active class to clicked option
+                option.classList.add('active');
+                
+                // Update board container class
+                const palette = option.getAttribute('data-palette');
+                boardContainer.className = `board-container palette-${palette}`;
+            });
         });
     </script>
 </body>
