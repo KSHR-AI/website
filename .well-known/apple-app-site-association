@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "8N47NFMLTW.com.kshr.budget",
+        "paths": ["/plaid/*"]
+      }
+    ]
+  }
+} 
