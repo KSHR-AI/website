@@ -315,7 +315,7 @@ h1 {
 .palette-warm .sticky-note:nth-child(6n+1) { background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); }
 .palette-warm .sticky-note:nth-child(6n+2) { background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 100%); }
 .palette-warm .sticky-note:nth-child(6n+3) { background: linear-gradient(135deg, #98fb98 0%, #90ee90 100%); }
-.palette-warm .sticky-note:nth-child(6n+4) { background: linear-gradient(135deg, #ffa07a 0%, #ff7f50 100%); }
+.palette-warm .sticky-note:nth-child(6n+4) { background: linear-gradient(135deg, #ffb89a 0%, #ff9977 100%); }
 .palette-warm .sticky-note:nth-child(6n+5) { background: linear-gradient(135deg, #ffffe0 0%, #fffacd 100%); }
 .palette-warm .sticky-note:nth-child(6n+6) { background: linear-gradient(135deg, #ffe4b5 0%, #ffdead 100%); }
 
@@ -404,17 +404,36 @@ h1 {
         gap: 10px;
     }
     
+    header {
+        flex-direction: row;
+        text-align: left;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
     h1 {
         font-size: 2rem;
     }
     
-    .author-line {
-        flex-direction: column;
+    .header-right {
+        text-align: right;
         gap: 4px;
+    }
+    
+    .author-line {
+        flex-direction: row;
+        gap: 6px;
+        align-items: center;
+        justify-content: flex-end;
     }
     
     .author-name {
         min-width: auto;
+        font-size: 0.75rem;
+    }
+    
+    .social-links a {
+        font-size: 0.7rem;
     }
     
     .sticky-note {
