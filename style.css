@@ -46,6 +46,7 @@ h1 {
     display: flex;
     align-items: center;
     gap: 10px;
+    justify-content: flex-end;
 }
 
 .author-name {
@@ -78,6 +79,82 @@ h1 {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
+}
+
+.projects-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    padding: 40px 20px;
+}
+
+.projects-grid {
+    display: flex;
+    gap: 60px;
+    justify-content: center;
+    align-items: center;
+}
+
+.app-icon {
+    width: 240px;
+    height: 240px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 
+        2px 2px 8px rgba(0,0,0,0.15),
+        0 0 0 1px rgba(0,0,0,0.05);
+    transform: rotate(-2deg);
+    position: relative;
+}
+
+.app-icon:nth-child(2) {
+    background: linear-gradient(135deg, #98fb98 0%, #90ee90 100%);
+    transform: rotate(1.5deg);
+}
+
+.app-icon:nth-child(3) {
+    background: linear-gradient(135deg, #ffb6c1 0%, #ffc0cb 100%);
+    transform: rotate(-1deg);
+}
+
+.app-icon:hover {
+    transform: rotate(0deg) scale(1.05);
+    box-shadow: 
+        4px 4px 16px rgba(0,0,0,0.25),
+        0 0 0 1px rgba(0,0,0,0.1);
+    z-index: 10;
+}
+
+.app-icon::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-top: 20px solid rgba(0,0,0,0.1);
+    border-top-right-radius: 3px;
+}
+
+.app-icon .icon {
+    font-size: 4.5rem;
+    margin-bottom: 16px;
+    color: #333;
+}
+
+.app-icon .app-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
 }
 
 .sticky-note {
@@ -375,6 +452,28 @@ h1 {
         justify-content: center;
     }
     
+    .projects-container {
+        padding: 30px 15px;
+        min-height: 50vh;
+    }
+    
+    .projects-grid {
+        gap: 40px;
+    }
+    
+    .app-icon {
+        width: 130px;
+        height: 130px;
+    }
+    
+    .app-icon .icon {
+        font-size: 2.5rem;
+    }
+    
+    .app-icon .app-name {
+        font-size: 0.9rem;
+    }
+    
     .sticky-note {
         padding: 15px;
         min-height: 180px;
@@ -434,6 +533,29 @@ h1 {
     
     .social-links a {
         font-size: 0.7rem;
+    }
+    
+    .projects-container {
+        padding: 20px 10px;
+        min-height: 40vh;
+    }
+    
+    .projects-grid {
+        gap: 30px;
+        flex-direction: column;
+    }
+    
+    .app-icon {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .app-icon .icon {
+        font-size: 2.2rem;
+    }
+    
+    .app-icon .app-name {
+        font-size: 0.85rem;
     }
     
     .sticky-note {

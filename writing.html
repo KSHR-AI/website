@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>KSHR - Writing</title>
+    <meta name="description" content="Mayank and Aman Kishore - exploring the future of AI, startups, and technology">
+    <meta name="author" content="KSHR">
+    <meta property="og:title" content="KSHR - Writing">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://kshr.ai/writing">
+    <meta property="og:description" content="Mayank and Aman Kishore - exploring the future of AI, startups, and technology">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <h1>KSHR</h1>
+        </div>
+        <div class="header-right">
+            <div class="author-line">
+                <span class="author-name">Aman Kishore:</span>
+                <div class="social-links">
+                    <a href="https://x.com/_amankishore" target="_blank">@x</a>
+                    <a href="mailto:aman@kshr.ai">email</a>
+                </div>
+            </div>
+            <div class="author-line">
+                <span class="author-name">Mayank Kishore:</span>
+                <div class="social-links">
+                    <a href="https://x.com/_mayankkishore" target="_blank">@x</a>
+                    <a href="mailto:mayank@kshr.ai">email</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="board-container">
+        <div class="sticky-note" data-article="ai-interaction">
+            <h3>The Future of Human-AI Interaction</h3>
+            <p class="author">by Mayank</p>
+            <p class="preview">How will humans and AI systems collaborate in the next decade? As we stand at the intersection of rapid AI advancement...</p>
+            <div class="note-corner"></div>
+        </div>
+
+        <div class="sticky-note" data-article="post-saas">
+            <h3>Post-SaaS Startup Landscape</h3>
+            <p class="author">by Aman</p>
+            <p class="preview">The next generation of startups will be fundamentally different from the SaaS wave that dominated the last decade...</p>
+            <div class="note-corner"></div>
+        </div>
+
+        <div class="sticky-note" data-article="ai-creativity">
+            <h3>AI and Human Creativity</h3>
+            <p class="author">by Mayank</p>
+            <p class="preview">Can machines truly be creative, or are they sophisticated pattern matchers? Exploring the boundaries between human imagination and artificial generation...</p>
+            <div class="note-corner"></div>
+        </div>
+
+        <div class="sticky-note" data-article="robotics-apple">
+            <h3>Building Robots at Apple</h3>
+            <p class="author">by Aman</p>
+            <p class="preview">Lessons learned from developing robotic systems in one of the world's most demanding engineering environments...</p>
+            <div class="note-corner"></div>
+        </div>
+
+        <div class="sticky-note" data-article="simulation-reality">
+            <h3>Simulation vs Reality</h3>
+            <p class="author">by Mayank</p>
+            <p class="preview">How synthetic data and simulation are revolutionizing autonomous systems. Our experience improving NVIDIA's vision systems...</p>
+            <div class="note-corner"></div>
+        </div>
+
+        <div class="sticky-note" data-article="startup-acquisition">
+            <h3>From Startup to Acquisition</h3>
+            <p class="author">by Aman</p>
+            <p class="preview">The journey of Mirage from founding to being acquired by Harvey. What we learned about building in the AI era...</p>
+            <div class="note-corner"></div>
+        </div>
+
+        <div class="sticky-note" data-article="future-work">
+            <h3>The Future of Work</h3>
+            <p class="author">by Mayank</p>
+            <p class="preview">As AI becomes more capable, how will human roles evolve? Thoughts on the changing nature of knowledge work...</p>
+            <div class="note-corner"></div>
+        </div>
+
+        <div class="sticky-note" data-article="tech-philosophy">
+            <h3>Technology and Philosophy</h3>
+            <p class="author">by Aman</p>
+            <p class="preview">What does it mean to be human in an age of artificial intelligence? Exploring the philosophical implications of our technological choices...</p>
+            <div class="note-corner"></div>
+        </div>
+
+        <div class="sticky-note" data-article="ai-safety">
+            <h3>AI Safety in Practice</h3>
+            <p class="author">by Mayank</p>
+            <p class="preview">Moving beyond theoretical discussions to practical implementations of AI safety measures in real-world systems...</p>
+            <div class="note-corner"></div>
+        </div>
+
+        <div class="sticky-note" data-article="venture-capital">
+            <h3>The New Venture Capital</h3>
+            <p class="author">by Aman</p>
+            <p class="preview">How AI is changing the venture capital landscape. What investors are looking for in the post-SaaS world...</p>
+            <div class="note-corner"></div>
+        </div>
+
+        <div class="sticky-note" data-article="human-machine">
+            <h3>Human-Machine Collaboration</h3>
+            <p class="author">by Mayank</p>
+            <p class="preview">Designing interfaces and workflows that maximize the strengths of both humans and machines...</p>
+            <div class="note-corner"></div>
+        </div>
+
+        <div class="sticky-note" data-article="silicon-valley">
+            <h3>Life in Silicon Valley</h3>
+            <p class="author">by Aman</p>
+            <p class="preview">Observations from living and working in the heart of the tech industry. The culture, the pace, and the future...</p>
+            <div class="note-corner"></div>
+        </div>
+    </div>
+
+    <!-- Modal for article content -->
+    <div id="article-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modal-article-content"></div>
+        </div>
+    </div>
+
+    <!-- Color Palette Selector -->
+    <div class="palette-selector">
+        <h4>Colors</h4>
+        <div class="palette-options">
+            <div class="palette-option warm active" data-palette="warm" title="Warm"></div>
+            <div class="palette-option cool" data-palette="cool" title="Cool"></div>
+            <div class="palette-option soft" data-palette="soft" title="Soft"></div>
+            <div class="palette-option pastel" data-palette="pastel" title="Pastel"></div>
+            <div class="palette-option blush" data-palette="blush" title="Blush"></div>
+        </div>
+    </div>
+
+    <script>
+        // Modal functionality
+        const modal = document.getElementById('article-modal');
+        const modalContent = document.getElementById('modal-article-content');
+        const closeBtn = document.querySelector('.close');
+        const stickyNotes = document.querySelectorAll('.sticky-note');
+
+        // Sample article content
+        const articles = {
+            'ai-interaction': {
+                title: 'The Future of Human-AI Interaction',
+                author: 'Mayank',
+                content: `
+                    <h2>The Future of Human-AI Interaction</h2>
+                    <p class="article-meta">by Mayank • December 2024</p>
+                    <p>How will humans and AI systems collaborate in the next decade? As we stand at the intersection of rapid AI advancement and evolving human needs, we're witnessing the emergence of new interaction paradigms that will fundamentally reshape how we work, learn, and create.</p>
+                    <p>The traditional model of human-computer interaction—where humans issue commands and computers execute them—is giving way to something more nuanced. We're entering an era of true collaboration, where AI systems don't just follow instructions but actively participate in the creative and problem-solving process.</p>
+                    <p>This shift requires us to rethink fundamental assumptions about agency, creativity, and the nature of intelligence itself. The most successful human-AI partnerships will be those that leverage the unique strengths of both parties while acknowledging their respective limitations.</p>
+                `
+            },
+            'post-saas': {
+                title: 'Post-SaaS Startup Landscape',
+                author: 'Aman',
+                content: `
+                    <h2>Post-SaaS Startup Landscape</h2>
+                    <p class="article-meta">by Aman • December 2024</p>
+                    <p>The next generation of startups will be fundamentally different from the SaaS wave that dominated the last decade. As AI capabilities mature and infrastructure costs plummet, we're entering an era where the most valuable companies will be those that can seamlessly blend human creativity with artificial intelligence.</p>
+                    <p>Traditional SaaS companies built tools—often complex, feature-rich platforms that required significant user training and adoption. The post-SaaS era is about building intelligence that adapts to users, not the other way around.</p>
+                    <p>This represents a fundamental shift in how we think about software, user experience, and value creation in the digital economy.</p>
+                `
+            }
+            // Add more articles as needed
+        };
+
+        // Add click listeners to sticky notes
+        stickyNotes.forEach(note => {
+            note.addEventListener('click', () => {
+                const articleId = note.getAttribute('data-article');
+                const article = articles[articleId];
+                
+                if (article) {
+                    modalContent.innerHTML = article.content;
+                    modal.style.display = 'block';
+                } else {
+                    modalContent.innerHTML = `
+                        <h2>${note.querySelector('h3').textContent}</h2>
+                        <p class="article-meta">${note.querySelector('.author').textContent} • Coming Soon</p>
+                        <p>This article is coming soon. Stay tuned for more insights on the future of technology and AI.</p>
+                    `;
+                    modal.style.display = 'block';
+                }
+            });
+        });
+
+        // Close modal when clicking the X
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        // Close modal when clicking outside of it
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Palette selector functionality
+        const boardContainer = document.querySelector('.board-container');
+        const paletteOptions = document.querySelectorAll('.palette-option');
+
+        // Set initial palette
+        boardContainer.className = 'board-container palette-warm';
+
+        paletteOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                // Remove active class from all options
+                paletteOptions.forEach(opt => opt.classList.remove('active'));
+                
+                // Add active class to clicked option
+                option.classList.add('active');
+                
+                // Update board container class
+                const palette = option.getAttribute('data-palette');
+                boardContainer.className = `board-container palette-${palette}`;
+            });
+        });
+    </script>
+</body>
+</html>
