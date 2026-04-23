@@ -16,90 +16,134 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/style.css">
 </head>
-<body class="privacy-page">
-    <main class="privacy-shell">
-        <header class="privacy-header">
+<body class="homepage">
+    <main id="top" class="home-shell">
+        <header class="home-header">
             <a class="home-brand" href="/" aria-label="KSHR home">KSHR</a>
-            <a class="privacy-home-link" href="/">Back to home</a>
+            <nav class="home-nav" aria-label="Privacy page navigation">
+                <a href="/">Home</a>
+                <a href="#policy">Policy</a>
+                <a href="#contact">Contact</a>
+            </nav>
         </header>
 
-        <section class="privacy-hero">
-            <p class="privacy-kicker">Privacy Policy</p>
-            <h1>Your data stays with you.</h1>
-            <p class="privacy-intro">
-                This policy applies to apps, websites, and related services published by
-                KSHR unless a product includes its own separate privacy policy.
-            </p>
-            <p class="privacy-effective-date">Effective date: April 23, 2026</p>
+        <section class="hero privacy-hero-section">
+            <div class="hero-title-wrap">
+                <p class="section-kicker">Privacy Policy</p>
+                <h1>We don&apos;t collect<br>your data.</h1>
+            </div>
+            <div class="hero-aside">
+                <p>
+                    This policy applies to apps, websites, and related services
+                    published by KSHR unless a product includes its own separate
+                    privacy policy.
+                </p>
+                <p class="privacy-meta">Effective date: April 23, 2026</p>
+                <a class="hero-link" href="#policy">
+                    <span class="hero-link-line" aria-hidden="true"></span>
+                    <span>Read the policy</span>
+                </a>
+            </div>
         </section>
 
-        <section class="privacy-card">
-            <div class="privacy-section">
-                <h2>What we collect</h2>
-                <p>
-                    We do not collect, store, transmit, or sell personal data from our
-                    users.
+        <div class="section-divider" aria-hidden="true"></div>
+
+        <section id="policy" class="home-section split-section">
+            <div class="section-heading">
+                <p class="section-kicker">Overview</p>
+                <h2 class="section-title">Collection</h2>
+            </div>
+            <div class="section-body privacy-stack">
+                <p class="section-copy">
+                    We do not collect, store, transmit, or sell personal data from
+                    users of the apps and services covered by this policy.
+                </p>
+                <p class="privacy-copy">
+                    We do not require user accounts, maintain user profiles, or operate
+                    cloud-hosted personal records for these products.
+                </p>
+                <p class="privacy-copy">
+                    We do not use analytics SDKs, advertising tools, tracking pixels,
+                    or other behavioral monitoring systems in the apps covered by this
+                    policy.
                 </p>
             </div>
+        </section>
 
-            <div class="privacy-section">
-                <h2>Analytics and tracking</h2>
-                <p>
-                    We do not use analytics, advertising SDKs, tracking pixels, or other
-                    behavioral monitoring tools in the apps covered by this policy.
-                </p>
+        <section class="home-section split-section">
+            <div class="section-heading">
+                <p class="section-kicker">On Device</p>
+                <h2 class="section-title">Storage</h2>
             </div>
-
-            <div class="privacy-section">
-                <h2>Accounts and sign-in</h2>
-                <p>
-                    Our apps do not require user accounts, and we do not maintain user
-                    profiles or cloud-hosted personal records.
-                </p>
-            </div>
-
-            <div class="privacy-section">
-                <h2>Data stored on your device</h2>
-                <p>
-                    If an app lets you create or save content locally, that information
+            <div class="section-body privacy-stack">
+                <p class="section-copy">
+                    If an app lets you create or save content locally, that content
                     remains on your device unless you choose to export or share it
-                    yourself. KSHR does not receive that content.
+                    yourself.
+                </p>
+                <p class="privacy-copy">
+                    KSHR does not receive that content and cannot access it through our
+                    services.
                 </p>
             </div>
+        </section>
 
-            <div class="privacy-section">
-                <h2>Third parties</h2>
-                <p>
-                    Platform providers such as Apple, Google, or your browser vendor may
-                    collect information under their own terms. Their data practices are
-                    governed by their privacy policies, not ours.
+        <section class="home-section split-section">
+            <div class="section-heading">
+                <p class="section-kicker">Platform Terms</p>
+                <h2 class="section-title">Third Parties</h2>
+            </div>
+            <div class="section-body privacy-stack">
+                <p class="section-copy">
+                    Platform providers such as Apple, Google, or your browser vendor
+                    may collect information under their own terms.
+                </p>
+                <p class="privacy-copy">
+                    Their practices are governed by their privacy policies, not this
+                    one.
+                </p>
+                <p class="privacy-copy">
+                    Because we do not collect personal information, we also do not
+                    knowingly collect personal information from children.
                 </p>
             </div>
+        </section>
 
-            <div class="privacy-section">
-                <h2>Children&apos;s privacy</h2>
-                <p>
-                    Because we do not collect personal information, we do not knowingly
-                    collect personal information from children.
-                </p>
+        <section class="home-section split-section">
+            <div class="section-heading">
+                <p class="section-kicker">Maintenance</p>
+                <h2 class="section-title">Updates</h2>
             </div>
-
-            <div class="privacy-section">
-                <h2>Changes to this policy</h2>
-                <p>
+            <div class="section-body privacy-stack">
+                <p class="section-copy">
                     If our data practices change, we will update this page before those
                     changes take effect.
                 </p>
-            </div>
-
-            <div class="privacy-section">
-                <h2>Contact</h2>
-                <p>
+                <p class="privacy-copy">
                     Questions about this policy can be sent to
                     <a href="mailto:hello@kshr.ai">hello@kshr.ai</a>.
                 </p>
             </div>
         </section>
+
+        <section id="contact" class="closing-section privacy-closing">
+            <h2>Questions?</h2>
+            <p>
+                If you need a product-specific version of this policy for a store
+                listing or release, contact us directly.
+            </p>
+            <a class="contact-button" href="mailto:hello@kshr.ai">Email KSHR</a>
+        </section>
     </main>
+
+    <footer class="home-footer">
+        <p>KSHR 2026. All rights reserved.</p>
+        <div class="footer-links" aria-label="Social links">
+            <a href="https://x.com/_amankishore" target="_blank" rel="noreferrer">Twitter</a>
+            <a href="https://www.linkedin.com" target="_blank" rel="noreferrer">LinkedIn</a>
+            <a href="mailto:hello@kshr.ai">Email</a>
+            <a href="/privacy/" aria-current="page">Privacy</a>
+        </div>
+    </footer>
 </body>
 </html>
