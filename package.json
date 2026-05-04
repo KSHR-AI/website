@@ -1,0 +1,13 @@
+{
+  "name": "kshr-web",
+  "private": true,
+  "workspaces": [
+    "apps/internal"
+  ],
+  "scripts": {
+    "internal:dev": "npm --workspace @kshr/internal run dev",
+    "internal:build": "npm --workspace @kshr/internal run build",
+    "internal:lint": "npm --workspace @kshr/internal run lint",
+    "internal:typecheck": "npm --workspace @kshr/internal run typecheck"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@kshr/internal",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "smoke:supabase": "node scripts/smoke-supabase.mjs",
+    "db:push": "set -a; [ -f .env.local ] && . .env.local; set +a; supabase db push --db-url \"$DATABASE_URL\"",
+    "db:lint": "set -a; [ -f .env.local ] && . .env.local; set +a; supabase db lint --db-url \"$DATABASE_URL\""
+  },
+  "dependencies": {
+    "@supabase/ssr": "0.10.2",
+    "@supabase/supabase-js": "2.105.1",
+    "next": "16.3.0-canary.9",
+    "react": "19.2.5",
+    "react-dom": "19.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "25.6.0",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.1",
+    "eslint-config-next": "16.3.0-canary.9",
+    "prettier": "3.8.3",
+    "typescript": "6.0.3"
+  }
+}

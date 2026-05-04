@@ -10,198 +10,86 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://kshr.ai/">
     <meta property="og:description" content="A new kind of firm that writes, advises, builds, and invests, moving fluidly between ideas and outcomes.">
-    <meta name="theme-color" content="#f7f5f0">
+    <meta name="theme-color" content="#fbfaf7">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20260502-identity">
 </head>
-<body class="homepage">
-    <main id="top" class="home-shell">
-        <header class="home-header">
-            <a class="home-brand" href="#top" aria-label="KSHR home">KSHR</a>
-            <nav class="home-nav" aria-label="Primary">
-                <a href="#knowledge">Knowledge</a>
-                <a href="#strategy">Strategy</a>
-                <a href="#holding">Holding</a>
-                <a href="#returns">Returns</a>
-            </nav>
-        </header>
-        <section class="hero">
-            <div class="hero-title-wrap">
-                <h1>We build what<br>we believe in.</h1>
-            </div>
-            <div class="hero-aside">
-                <p>
-                    A new kind of firm that writes, advises, builds, and invests, moving
-                    fluidly between ideas and outcomes.
-                </p>
-                <a class="hero-link" href="#knowledge">
-                    <span class="hero-link-line" aria-hidden="true"></span>
-                    <span>Explore our work</span>
-                </a>
-            </div>
-        </section>
+<body class="homepage identity-home">
+    <main id="top" class="identity-shell">
+        <section class="identity-stage" aria-labelledby="identity-title">
+            <h1 id="identity-title" class="identity-word" aria-label="KSHR">
+                <button class="identity-letter is-active" type="button" data-term="knowledge" aria-pressed="true">K</button>
+                <button class="identity-letter" type="button" data-term="strategy" aria-pressed="false">S</button>
+                <button class="identity-letter" type="button" data-term="holding" aria-pressed="false">H</button>
+                <button class="identity-letter" type="button" data-term="returns" aria-pressed="false">R</button>
+            </h1>
 
-        <div class="section-divider" aria-hidden="true"></div>
+            <p class="identity-caption">
+                A new kind of firm that writes, advises, builds, and invests,
+                moving fluidly between ideas and outcomes.
+            </p>
 
-        <section id="knowledge" class="home-section split-section">
-            <div class="section-heading">
-                <h2 class="section-title">Knowledge</h2>
-            </div>
-            <div class="section-body">
-                <p class="section-copy">
+            <div class="identity-definition" aria-live="polite" aria-atomic="true">
+                <p id="definition-title" class="definition-title">Knowledge</p>
+                <p id="definition-copy" class="definition-copy">
                     Writing and research that sharpens how we see the world. Our blog,
                     essays, and deep dives are where conviction begins.
                 </p>
-                <div class="essay-grid">
-                    <article class="essay-card">
-                        <p class="card-kicker">Latest Essay</p>
-                        <h3>The Case for Patient Capital in AI Infrastructure</h3>
-                        <p>
-                            Why the next decade belongs to those who build slowly and own
-                            the stack.
-                        </p>
-                    </article>
-                    <article class="essay-card">
-                        <p class="card-kicker">Research</p>
-                        <h3>Vertical SaaS and the Unbundling of Enterprise</h3>
-                        <p>
-                            How niche software is quietly replacing horizontal platforms.
-                        </p>
-                    </article>
-                </div>
             </div>
-        </section>
-
-        <section id="strategy" class="home-section split-section">
-            <div class="section-heading">
-                <h2 class="section-title">Strategy</h2>
-            </div>
-            <div class="section-body">
-                <p class="section-copy">
-                    We partner with founders and operators to solve their hardest
-                    problems. Not slide decks, real work embedded in the business.
-                </p>
-                <div class="metric-row" role="list" aria-label="Strategy metrics">
-                    <article class="metric-card" role="listitem">
-                        <p class="metric-number">12</p>
-                        <p class="metric-label">Active engagements across industries</p>
-                    </article>
-                    <article class="metric-card" role="listitem">
-                        <p class="metric-number">3</p>
-                        <p class="metric-label">Sectors of deep operational focus</p>
-                    </article>
-                    <article class="metric-card metric-card-last" role="listitem">
-                        <p class="metric-number">87%</p>
-                        <p class="metric-label">Client retention year over year</p>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <section id="holding" class="home-section split-section holding-section">
-            <div class="section-heading">
-                <h2 class="section-title">Holding</h2>
-            </div>
-            <div class="section-body">
-                <p class="section-copy">
-                    Products and platforms we&apos;ve built from the ground up. We don&apos;t
-                    just advise, we ship, operate, and own.
-                </p>
-            </div>
-        </section>
-
-        <section class="holding-grid" aria-label="Holding companies">
-            <article class="holding-card">
-                <div class="holding-card-media">
-                    <p>Plaid</p>
-                </div>
-                <div class="holding-card-body">
-                    <p class="card-kicker">Financial Infrastructure</p>
-                    <p>
-                        A seamless integration layer for banking data, connecting
-                        applications to financial institutions.
-                    </p>
-                </div>
-            </article>
-            <article class="holding-card">
-                <div class="holding-card-media">
-                    <p>Meridian</p>
-                </div>
-                <div class="holding-card-body">
-                    <p class="card-kicker">Supply Chain OS</p>
-                    <p>
-                        End-to-end logistics intelligence for mid-market manufacturers
-                        scaling globally.
-                    </p>
-                </div>
-            </article>
-        </section>
-
-        <section id="returns" class="home-section split-section returns-section">
-            <div class="section-heading">
-                <h2 class="section-title">Returns</h2>
-            </div>
-            <div class="section-body">
-                <p class="section-copy">
-                    Capital deployed with conviction. We invest in companies at the
-                    intersection of our expertise, where our insight compounds alongside
-                    our capital.
-                </p>
-                <div class="returns-list" role="list" aria-label="Portfolio companies">
-                    <article class="returns-row" role="listitem">
-                        <div class="returns-company">
-                            <h3>Arcline</h3>
-                            <p>Developer tools for API observability</p>
-                        </div>
-                        <div class="returns-meta">
-                            <p>Series A</p>
-                            <span>2024</span>
-                        </div>
-                    </article>
-                    <article class="returns-row" role="listitem">
-                        <div class="returns-company">
-                            <h3>Hallow</h3>
-                            <p>Compliance automation for fintechs</p>
-                        </div>
-                        <div class="returns-meta">
-                            <p>Seed</p>
-                            <span>2025</span>
-                        </div>
-                    </article>
-                    <article class="returns-row" role="listitem">
-                        <div class="returns-company">
-                            <h3>Terrace</h3>
-                            <p>Modular housing for climate-resilient cities</p>
-                        </div>
-                        <div class="returns-meta">
-                            <p>Series B</p>
-                            <span>2023</span>
-                        </div>
-                    </article>
-                </div>
-            </div>
-        </section>
-
-        <section id="contact" class="closing-section">
-            <h2>Think with us.</h2>
-            <p>
-                We&apos;re always looking for ambitious people and bold companies. If
-                that&apos;s you, get in touch.
-            </p>
-            <a class="contact-button" href="mailto:hello@kshr.ai">Get in touch</a>
         </section>
     </main>
 
-    <footer class="home-footer">
-        <p>KSHR 2026. All rights reserved.</p>
-        <div class="footer-links" aria-label="Social links">
-            <a href="https://x.com/_amankishore" target="_blank" rel="noreferrer">Twitter</a>
-            <a href="https://www.linkedin.com" target="_blank" rel="noreferrer">LinkedIn</a>
-            <a href="mailto:hello@kshr.ai">Email</a>
-            <a href="/privacy/">Privacy</a>
-        </div>
+    <footer class="identity-footer">
+        <a href="mailto:hello@kshr.ai">Email</a>
+        <a href="/privacy/">Privacy</a>
     </footer>
+
+    <script>
+        (() => {
+            const definitions = {
+                knowledge: {
+                    title: "Knowledge",
+                    copy: "Writing and research that sharpens how we see the world. Our blog, essays, and deep dives are where conviction begins."
+                },
+                strategy: {
+                    title: "Strategy",
+                    copy: "We partner with founders and operators to solve their hardest problems. Not slide decks, real work embedded in the business."
+                },
+                holding: {
+                    title: "Holding",
+                    copy: "Products and platforms we've built from the ground up. We don't just advise, we ship, operate, and own."
+                },
+                returns: {
+                    title: "Returns",
+                    copy: "Capital deployed with conviction. We invest in companies at the intersection of our expertise, where our insight compounds alongside our capital."
+                }
+            };
+
+            const letters = Array.from(document.querySelectorAll(".identity-letter"));
+            const title = document.querySelector("#definition-title");
+            const copy = document.querySelector("#definition-copy");
+
+            const setActive = (letter) => {
+                const definition = definitions[letter.dataset.term];
+
+                letters.forEach((candidate) => {
+                    const active = candidate === letter;
+                    candidate.classList.toggle("is-active", active);
+                    candidate.setAttribute("aria-pressed", String(active));
+                });
+
+                title.textContent = definition.title;
+                copy.textContent = definition.copy;
+            };
+
+            letters.forEach((letter) => {
+                letter.addEventListener("mouseenter", () => setActive(letter));
+                letter.addEventListener("focus", () => setActive(letter));
+                letter.addEventListener("click", () => setActive(letter));
+            });
+        })();
+    </script>
 </body>
 </html>
