@@ -385,14 +385,6 @@ body.identity-home {
     text-underline-offset: 0.08em;
 }
 
-.identity-caption {
-    color: var(--home-text);
-    font-size: 18px;
-    font-weight: 300;
-    line-height: 28px;
-    max-width: 560px;
-}
-
 .identity-definition {
     border-bottom: 1px solid var(--home-line);
     border-top: 1px solid var(--home-line);
@@ -634,12 +626,6 @@ body.identity-home {
         font-size: 92px;
     }
 
-    .identity-caption {
-        font-size: 16px;
-        line-height: 26px;
-        max-width: 340px;
-    }
-
     .identity-definition {
         max-width: 340px;
         min-height: 168px;
@@ -657,7 +643,6 @@ body.identity-home {
 }
 
 @media (max-width: 560px) {
-    .identity-caption,
     .identity-definition {
         max-width: 280px;
     }
@@ -699,7 +684,6 @@ body.identity-home {
         font-size: 82px;
     }
 
-    .identity-caption,
     .identity-definition {
         max-width: 280px;
     }
