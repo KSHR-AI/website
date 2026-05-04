@@ -389,8 +389,8 @@ body.identity-home {
     border-bottom: 1px solid var(--home-line);
     border-top: 1px solid var(--home-line);
     max-width: 640px;
-    min-height: 122px;
-    padding: 22px 0 24px;
+    min-height: 96px;
+    padding: 18px 0;
     width: 100%;
 }
 
@@ -607,8 +607,8 @@ body.identity-home {
 
     .identity-definition {
         max-width: 340px;
-        min-height: 168px;
-        padding: 20px 0 22px;
+        min-height: 132px;
+        padding: 18px 0;
     }
 
     .definition-copy {
