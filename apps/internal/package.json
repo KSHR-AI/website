@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test:portfolio": "node --experimental-strip-types --test lib/portfolio.test.mjs",
     "smoke:supabase": "node scripts/smoke-supabase.mjs",
     "db:push": "set -a; [ -f .env.local ] && . .env.local; set +a; supabase db push --db-url \"$DATABASE_URL\"",
     "db:lint": "set -a; [ -f .env.local ] && . .env.local; set +a; supabase db lint --db-url \"$DATABASE_URL\""

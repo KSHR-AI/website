@@ -6,14 +6,19 @@ import { redirect } from "next/navigation";
 import { formNumber, formString } from "@/lib/format";
 import { requireActiveUser } from "@/lib/supabase/server";
 
-async function logActivity(action: string, entityType: string, entityId: string, details = {}) {
+async function logActivity(
+  action: string,
+  entityType: string,
+  entityId: string,
+  details = {},
+) {
   const { supabase, user } = await requireActiveUser();
   await supabase.from("activity_log").insert({
     actor_id: user.id,
     entity_type: entityType,
     entity_id: entityId,
     action,
-    details
+    details,
   });
 }
 
@@ -33,7 +38,7 @@ export async function createCompany(formData: FormData) {
       stage: formString(formData, "stage") ?? "prospect",
       description: formString(formData, "description"),
       founded_year: formNumber(formData, "founded_year"),
-      created_by: user.id
+      created_by: user.id,
     })
     .select("id")
     .single();
@@ -62,7 +67,7 @@ export async function updateCompany(formData: FormData) {
       website: formString(formData, "website"),
       stage: formString(formData, "stage"),
       description: formString(formData, "description"),
-      founded_year: formNumber(formData, "founded_year")
+      founded_year: formNumber(formData, "founded_year"),
     })
     .eq("id", id);
 
@@ -88,7 +93,7 @@ export async function createContact(formData: FormData) {
       phone: formString(formData, "phone"),
       title: formString(formData, "title"),
       linkedin_url: formString(formData, "linkedin_url"),
-      created_by: user.id
+      created_by: user.id,
     })
     .select("id")
     .single();
@@ -97,7 +102,9 @@ export async function createContact(formData: FormData) {
     redirect("/contacts?error=create_failed");
   }
 
-  await logActivity("created_contact", "contact", data.id, { first_name: firstName });
+  await logActivity("created_contact", "contact", data.id, {
+    first_name: firstName,
+  });
   revalidatePath("/contacts");
 }
 
@@ -118,7 +125,7 @@ export async function updateContact(formData: FormData) {
       email: formString(formData, "email"),
       phone: formString(formData, "phone"),
       title: formString(formData, "title"),
-      linkedin_url: formString(formData, "linkedin_url")
+      linkedin_url: formString(formData, "linkedin_url"),
     })
     .eq("id", id);
 
@@ -142,7 +149,7 @@ export async function createCompanyContact(formData: FormData) {
       last_name: formString(formData, "last_name"),
       email: formString(formData, "email"),
       title: formString(formData, "title"),
-      created_by: user.id
+      created_by: user.id,
     })
     .select("id")
     .single();
@@ -152,9 +159,11 @@ export async function createCompanyContact(formData: FormData) {
       company_id: companyId,
       contact_id: data.id,
       relationship: formString(formData, "relationship"),
-      is_primary: formData.get("is_primary") === "on"
+      is_primary: formData.get("is_primary") === "on",
     });
-    await logActivity("linked_contact", "company", companyId, { contact_id: data.id });
+    await logActivity("linked_contact", "company", companyId, {
+      contact_id: data.id,
+    });
   }
 
   revalidatePath(`/companies/${companyId}`);
@@ -174,7 +183,7 @@ export async function createNote(formData: FormData) {
     entity_type: entityType,
     entity_id: entityId,
     body,
-    created_by: user.id
+    created_by: user.id,
   });
 
   await logActivity("created_note", entityType, entityId);
@@ -213,10 +222,11 @@ export async function createInteraction(formData: FormData) {
     company_id: companyId,
     contact_id: formString(formData, "contact_id"),
     kind: formString(formData, "kind") ?? "note",
-    occurred_at: formString(formData, "occurred_at") ?? new Date().toISOString(),
+    occurred_at:
+      formString(formData, "occurred_at") ?? new Date().toISOString(),
     summary,
     notes: formString(formData, "notes"),
-    created_by: user.id
+    created_by: user.id,
   });
 
   await logActivity("created_interaction", "company", companyId, { summary });
@@ -237,9 +247,10 @@ export async function updateInteraction(formData: FormData) {
     .from("interactions")
     .update({
       kind: formString(formData, "kind") ?? "note",
-      occurred_at: formString(formData, "occurred_at") ?? new Date().toISOString(),
+      occurred_at:
+        formString(formData, "occurred_at") ?? new Date().toISOString(),
       summary,
-      notes: formString(formData, "notes")
+      notes: formString(formData, "notes"),
     })
     .eq("id", id);
 
@@ -264,7 +275,7 @@ export async function createTask(formData: FormData) {
     entity_type: entityType,
     entity_id: entityId,
     owner_id: user.id,
-    created_by: user.id
+    created_by: user.id,
   });
 
   if (entityType && entityId) {
@@ -292,7 +303,7 @@ export async function updateTask(formData: FormData) {
       status: formString(formData, "status") ?? "open",
       due_at: formString(formData, "due_at"),
       entity_type: entityType,
-      entity_id: entityId
+      entity_id: entityId,
     })
     .eq("id", id);
 
@@ -331,7 +342,7 @@ export async function createFund(formData: FormData) {
       name,
       vintage_year: formNumber(formData, "vintage_year"),
       description: formString(formData, "description"),
-      created_by: user.id
+      created_by: user.id,
     })
     .select("id")
     .single();
@@ -361,13 +372,15 @@ export async function createRound(formData: FormData) {
       amount_raised: formNumber(formData, "amount_raised"),
       pre_money_valuation: formNumber(formData, "pre_money_valuation"),
       post_money_valuation: formNumber(formData, "post_money_valuation"),
-      created_by: user.id
+      created_by: user.id,
     })
     .select("id")
     .single();
 
   if (data) {
-    await logActivity("created_round", "round", data.id, { company_id: companyId });
+    await logActivity("created_round", "round", data.id, {
+      company_id: companyId,
+    });
   }
   revalidatePath("/portfolio");
   revalidatePath(`/companies/${companyId}`);
@@ -376,32 +389,129 @@ export async function createRound(formData: FormData) {
 export async function createInvestment(formData: FormData) {
   const { supabase, user } = await requireActiveUser();
   const companyId = formString(formData, "company_id");
+  const investedOn = formString(formData, "invested_on");
+  const amount = formNumber(formData, "amount");
 
-  if (!companyId) {
-    redirect("/portfolio?error=investment_company_required");
+  if (!companyId || !investedOn || amount === null || amount <= 0) {
+    redirect("/portfolio?error=investment_required");
   }
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("investments")
     .insert({
       company_id: companyId,
       fund_id: formString(formData, "fund_id"),
       round_id: formString(formData, "round_id"),
-      invested_on: formString(formData, "invested_on"),
-      amount: formNumber(formData, "amount"),
+      invested_on: investedOn,
+      amount,
       ownership_percent: formNumber(formData, "ownership_percent"),
       security: formString(formData, "security"),
       status: formString(formData, "status") ?? "active",
-      created_by: user.id
+      created_by: user.id,
     })
     .select("id")
     .single();
 
-  if (data) {
-    await logActivity("created_investment", "investment", data.id, { company_id: companyId });
+  if (error || !data) {
+    redirect("/portfolio?error=investment_create_failed");
   }
+
+  await logActivity("created_investment", "investment", data.id, {
+    company_id: companyId,
+    amount,
+  });
   revalidatePath("/portfolio");
   revalidatePath(`/companies/${companyId}`);
+}
+
+export async function createInvestmentCashFlow(formData: FormData) {
+  const { supabase, user } = await requireActiveUser();
+  const investmentId = formString(formData, "investment_id");
+  const occurredOn = formString(formData, "occurred_on");
+  const cashFlowType = formString(formData, "cash_flow_type");
+  const amount = formNumber(formData, "amount");
+  const allowedTypes = new Set(["distribution", "fee"]);
+
+  if (
+    !investmentId ||
+    !occurredOn ||
+    !cashFlowType ||
+    !allowedTypes.has(cashFlowType) ||
+    amount === null ||
+    amount <= 0
+  ) {
+    redirect("/portfolio?error=cash_flow_required");
+  }
+
+  const { error } = await supabase.from("investment_cash_flows").insert({
+    investment_id: investmentId,
+    occurred_on: occurredOn,
+    cash_flow_type: cashFlowType,
+    amount,
+    notes: formString(formData, "notes"),
+    created_by: user.id,
+  });
+
+  if (error) {
+    redirect("/portfolio?error=cash_flow_create_failed");
+  }
+
+  await logActivity(
+    "recorded_investment_cash_flow",
+    "investment",
+    investmentId,
+    {
+      amount,
+      cash_flow_type: cashFlowType,
+    },
+  );
+  revalidatePath("/portfolio");
+}
+
+export async function createInvestmentValuationMark(formData: FormData) {
+  const { supabase, user } = await requireActiveUser();
+  const investmentId = formString(formData, "investment_id");
+  const valuedOn = formString(formData, "valued_on");
+  const fairValue = formNumber(formData, "fair_value");
+  const companyValuation = formNumber(formData, "company_valuation");
+
+  if (
+    !investmentId ||
+    !valuedOn ||
+    fairValue === null ||
+    fairValue < 0 ||
+    (companyValuation !== null && companyValuation < 0)
+  ) {
+    redirect("/portfolio?error=valuation_mark_required");
+  }
+
+  const { error } = await supabase.from("investment_valuation_marks").upsert(
+    {
+      investment_id: investmentId,
+      valued_on: valuedOn,
+      fair_value: fairValue,
+      company_valuation: companyValuation,
+      source: formString(formData, "source"),
+      notes: formString(formData, "notes"),
+      created_by: user.id,
+    },
+    { onConflict: "investment_id,valued_on" },
+  );
+
+  if (error) {
+    redirect("/portfolio?error=valuation_mark_create_failed");
+  }
+
+  await logActivity(
+    "recorded_investment_valuation",
+    "investment",
+    investmentId,
+    {
+      fair_value: fairValue,
+      valued_on: valuedOn,
+    },
+  );
+  revalidatePath("/portfolio");
 }
 
 export async function createMetric(formData: FormData) {
@@ -418,11 +528,15 @@ export async function createMetric(formData: FormData) {
     metric_name: metricName,
     metric_value: formNumber(formData, "metric_value"),
     metric_text: formString(formData, "metric_text"),
-    measured_on: formString(formData, "measured_on") ?? new Date().toISOString().slice(0, 10),
-    created_by: user.id
+    measured_on:
+      formString(formData, "measured_on") ??
+      new Date().toISOString().slice(0, 10),
+    created_by: user.id,
   });
 
-  await logActivity("created_metric", "company", companyId, { metric_name: metricName });
+  await logActivity("created_metric", "company", companyId, {
+    metric_name: metricName,
+  });
   revalidatePath("/portfolio");
   revalidatePath(`/companies/${companyId}`);
 }
@@ -442,7 +556,7 @@ export async function createDocumentRecord(formData: FormData) {
     title,
     storage_path: storagePath,
     mime_type: formString(formData, "mime_type"),
-    created_by: user.id
+    created_by: user.id,
   });
 
   await logActivity("added_document", "company", companyId, { title });

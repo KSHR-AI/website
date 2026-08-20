@@ -17,7 +17,13 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: "Inter", "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    "Inter",
+    "DM Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   margin: 0;
   min-height: 100vh;
 }
@@ -156,6 +162,60 @@ button {
 .stat strong {
   font-size: 32px;
   line-height: 1;
+}
+
+.portfolio-stats .stat strong {
+  font-size: clamp(24px, 2.4vw, 32px);
+}
+
+.negative {
+  color: var(--danger);
+}
+
+.calculation-note {
+  color: var(--soft);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 10px 0 0;
+}
+
+.portfolio-entry-grid,
+.portfolio-structure-grid,
+.portfolio-table-panel {
+  margin-top: 24px;
+}
+
+#add-investment {
+  scroll-margin-top: 24px;
+}
+
+.section-heading {
+  align-items: flex-end;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.section-heading h2 {
+  margin-bottom: 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.portfolio-table {
+  min-width: 980px;
+}
+
+.table-subline {
+  color: var(--soft);
+  display: block;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-top: 4px;
+  white-space: nowrap;
 }
 
 .table {
@@ -344,6 +404,16 @@ button,
 
   .page-header {
     display: block;
+  }
+
+  .page-header .button {
+    margin-top: 16px;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    display: grid;
+    gap: 4px;
   }
 
   .table {
