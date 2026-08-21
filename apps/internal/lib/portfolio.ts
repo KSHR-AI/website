@@ -37,7 +37,9 @@ export type InvestmentReturnMetrics = {
   markDate: string | null;
   moic: number | null;
   paidIn: number;
+  rvpi: number | null;
   totalValue: number;
+  tvpi: number | null;
   xirr: number | null;
 };
 
@@ -272,6 +274,7 @@ function calculateInvestment(investment: PortfolioInvestment, today: string) {
       : 0;
   const markDate = valuation?.valued_on ?? (isActive ? today : null);
   const totalValue = currentValue + distributions;
+  const tvpi = paidIn > 0 ? totalValue / paidIn : null;
   const flows = investmentCashFlowSeries(investment, currentValue, markDate);
 
   return {
@@ -283,9 +286,11 @@ function calculateInvestment(investment: PortfolioInvestment, today: string) {
       gain: totalValue - paidIn,
       invested,
       markDate,
-      moic: paidIn > 0 ? totalValue / paidIn : null,
+      moic: tvpi,
       paidIn,
+      rvpi: paidIn > 0 ? currentValue / paidIn : null,
       totalValue,
+      tvpi,
       xirr: calculateXirr(flows),
     } satisfies InvestmentReturnMetrics,
     flows,
@@ -318,6 +323,7 @@ export function calculatePortfolioMetrics(
   );
   const paidIn = totals.invested + totals.fees;
   const totalValue = totals.currentValue + totals.distributions;
+  const tvpi = paidIn > 0 ? totalValue / paidIn : null;
   const portfolioFlows = calculated.flatMap((investment) => investment.flows);
   const latestMarkDate =
     calculated
@@ -342,9 +348,11 @@ export function calculatePortfolioMetrics(
         investment.metrics.currentValue > investment.metrics.paidIn,
     ).length,
     markDate: latestMarkDate,
-    moic: paidIn > 0 ? totalValue / paidIn : null,
+    moic: tvpi,
     paidIn,
+    rvpi: paidIn > 0 ? totals.currentValue / paidIn : null,
     totalValue,
+    tvpi,
     xirr: calculateXirr(portfolioFlows),
   };
 }

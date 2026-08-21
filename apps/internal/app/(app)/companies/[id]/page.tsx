@@ -67,7 +67,7 @@ export default async function CompanyDetailPage({ params }: CompanyPageProps) {
       .order("occurred_at", { ascending: false }),
     supabase
       .from("investments")
-      .select("id,amount,currency,status,invested_on,funds(name),rounds(name)")
+      .select("id,amount,currency,status,invested_on,rounds(name)")
       .eq("company_id", id),
     supabase
       .from("portfolio_metrics")
@@ -385,10 +385,9 @@ export default async function CompanyDetailPage({ params }: CompanyPageProps) {
         </article>
 
         <article className="panel">
-          <h2>Investments</h2>
+          <h2>KSHR position</h2>
           <div className="record-list">
             {(investmentsResult.data ?? []).map((investment) => {
-              const fund = oneRelation(investment.funds);
               const round = oneRelation(investment.rounds);
 
               return (
@@ -397,8 +396,8 @@ export default async function CompanyDetailPage({ params }: CompanyPageProps) {
                     {formatMoney(investment.amount, investment.currency)}
                   </span>
                   <span className="record-meta">
-                    {fund?.name ?? "No fund"} · {round?.name ?? "No round"} ·{" "}
-                    {investment.status}
+                    {round?.name ?? "No round"} · {investment.status} ·{" "}
+                    {formatDate(investment.invested_on)}
                   </span>
                 </div>
               );

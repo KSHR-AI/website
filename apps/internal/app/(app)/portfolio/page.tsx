@@ -1,11 +1,12 @@
+import { Fragment } from "react";
 import Link from "next/link";
 
 import {
-  createFund,
   createInvestment,
   createInvestmentCashFlow,
   createInvestmentValuationMark,
-  createRound,
+  updateInvestment,
+  updateInvestmentCashFlow,
 } from "@/app/(app)/actions";
 import { EmptyState } from "@/components/empty-state";
 import {
@@ -26,41 +27,66 @@ import { requireActiveUser } from "@/lib/supabase/server";
 
 type Relation<T> = T | T[] | null;
 
+type CashFlowRecord = {
+  amount: number | string;
+  cash_flow_type: string;
+  id: string;
+  is_initial_contribution: boolean;
+  notes: string | null;
+  occurred_on: string;
+};
+
+type ValuationMarkRecord = {
+  company_valuation: number | string | null;
+  fair_value: number | string;
+  id: string;
+  source: string | null;
+  valued_on: string;
+};
+
 type InvestmentRecord = {
   amount: number | string | null;
   companies: Relation<{ id: string; name: string; stage: string }>;
+  company_id: string;
   currency: string;
-  funds: Relation<{ name: string }>;
   id: string;
   invested_on: string | null;
-  investment_cash_flows: Array<{
-    amount: number | string;
-    cash_flow_type: string;
-    occurred_on: string;
-  }>;
-  investment_valuation_marks: Array<{
-    company_valuation: number | string | null;
-    fair_value: number | string;
-    valued_on: string;
-  }>;
+  investment_cash_flows: CashFlowRecord[];
+  investment_valuation_marks: ValuationMarkRecord[];
   ownership_percent: number | string | null;
-  rounds: Relation<{
-    name: string;
-    post_money_valuation: number | string | null;
-  }>;
   security: string | null;
   status: string;
 };
 
+const companyStages = [
+  "prospect",
+  "diligence",
+  "portfolio",
+  "passed",
+  "exited",
+];
+
+const investmentStatuses = ["active", "watching", "exited"];
+
 const errorMessages: Record<string, string> = {
   cash_flow_create_failed: "The cash flow could not be saved.",
-  cash_flow_required: "Choose an investment, date, type, and positive amount.",
-  investment_create_failed: "The investment could not be saved.",
+  cash_flow_required: "Choose a holding, date, type, and positive amount.",
+  cash_flow_update_failed: "The cash flow could not be updated.",
+  cash_flow_update_required: "Cash-flow date, type, and amount are required.",
+  investment_create_failed: "The holding could not be saved.",
   investment_required:
     "Company, investment date, and a positive amount are required.",
+  investment_update_failed: "The holding changes could not be saved.",
+  investment_update_required:
+    "Company, date, amount, stage, and status are required.",
   valuation_mark_create_failed: "The valuation mark could not be saved.",
   valuation_mark_required:
-    "Choose an investment, valuation date, and nonnegative fair value.",
+    "Choose a holding, valuation date, and nonnegative fair value.",
+};
+
+const updatedMessages: Record<string, string> = {
+  cash_flow: "Cash flow updated.",
+  investment: "Holding updated.",
 };
 
 function portfolioInput(investment: InvestmentRecord): PortfolioInvestment {
@@ -84,47 +110,35 @@ function investmentName(investment: InvestmentRecord) {
 }
 
 function latestMark(investment: InvestmentRecord) {
-  return [...investment.investment_valuation_marks].sort(
-    (a, b) => new Date(b.valued_on).getTime() - new Date(a.valued_on).getTime(),
+  return [...investment.investment_valuation_marks].sort((a, b) =>
+    b.valued_on.localeCompare(a.valued_on),
   )[0];
 }
 
 export default async function PortfolioPage({
   searchParams,
-}: Readonly<{ searchParams: Promise<{ error?: string }> }>) {
-  const { error } = await searchParams;
+}: Readonly<{
+  searchParams: Promise<{ edit?: string; error?: string; updated?: string }>;
+}>) {
+  const { edit, error, updated } = await searchParams;
   const { supabase } = await requireActiveUser();
   const today = new Date().toISOString().slice(0, 10);
 
-  const [companiesResult, fundsResult, roundsResult, investmentsResult] =
-    await Promise.all([
-      supabase.from("companies").select("id,name,stage").order("name"),
-      supabase
-        .from("funds")
-        .select("id,name,vintage_year,description")
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("rounds")
-        .select(
-          "id,name,round_type,amount_raised,currency,post_money_valuation,companies(name)",
-        )
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("investments")
-        .select(
-          "id,amount,currency,ownership_percent,status,security,invested_on,companies(id,name,stage),funds(name),rounds(name,post_money_valuation),investment_cash_flows(amount,cash_flow_type,occurred_on),investment_valuation_marks(fair_value,company_valuation,valued_on)",
-        )
-        .order("invested_on", { ascending: false }),
-    ]);
+  const [companiesResult, investmentsResult] = await Promise.all([
+    supabase.from("companies").select("id,name,stage").order("name"),
+    supabase
+      .from("investments")
+      .select(
+        "id,company_id,amount,currency,ownership_percent,status,security,invested_on,companies(id,name,stage),investment_cash_flows(id,amount,cash_flow_type,occurred_on,notes,is_initial_contribution),investment_valuation_marks(id,fair_value,company_valuation,valued_on,source)",
+      )
+      .order("invested_on", { ascending: false }),
+  ]);
 
   const companies = companiesResult.data ?? [];
-  const funds = fundsResult.data ?? [];
-  const rounds = roundsResult.data ?? [];
   const investments = (investmentsResult.data ??
     []) as unknown as InvestmentRecord[];
-  const portfolioInvestments = investments.map(portfolioInput);
   const portfolioMetrics = calculatePortfolioMetrics(
-    portfolioInvestments,
+    investments.map(portfolioInput),
     today,
   );
   const dealMetrics = new Map(
@@ -133,73 +147,420 @@ export default async function PortfolioPage({
       calculateInvestmentMetrics(portfolioInput(investment), today),
     ]),
   );
+  const editableCashFlows = investments
+    .flatMap((investment) =>
+      investment.investment_cash_flows
+        .filter((cashFlow) => !cashFlow.is_initial_contribution)
+        .map((cashFlow) => ({
+          ...cashFlow,
+          company: oneRelation(investment.companies)?.name ?? "Unknown company",
+          investmentId: investment.id,
+        })),
+    )
+    .sort((a, b) => b.occurred_on.localeCompare(a.occurred_on));
 
   return (
     <>
-      <header className="page-header">
+      <header className="page-header fund-header">
         <div>
-          <p className="eyebrow">Portfolio</p>
+          <p className="eyebrow">KSHR</p>
           <h1>Portfolio</h1>
           <p>
-            {portfolioMetrics.activeInvestments} active investments ·{" "}
-            {portfolioMetrics.markedAboveCost} marked above cost
+            {portfolioMetrics.activeInvestments} active holdings
             {portfolioMetrics.markDate
               ? ` · marks through ${formatDate(portfolioMetrics.markDate)}`
               : ""}
           </p>
         </div>
-        <a className="button" href="#portfolio-actions">
-          Add investment
+        <a className="button compact" href="#portfolio-actions">
+          Add holding
         </a>
       </header>
 
       {error ? (
         <p className="alert">
-          {errorMessages[error] ?? "The portfolio update could not be saved."}
+          {errorMessages[error] ?? "The fund update could not be saved."}
+        </p>
+      ) : null}
+      {updated ? (
+        <p className="success">
+          {updatedMessages[updated] ?? "Fund data updated."}
         </p>
       ) : null}
 
-      <section className="grid three portfolio-stats">
+      <section className="portfolio-stats fund-stats" aria-label="Fund returns">
         <article className="panel stat">
-          <span className="record-meta">Invested</span>
-          <strong>{formatMoney(portfolioMetrics.invested)}</strong>
-        </article>
-        <article className="panel stat">
-          <span className="record-meta">Fair value</span>
-          <strong>{formatMoney(portfolioMetrics.currentValue)}</strong>
-        </article>
-        <article className="panel stat">
-          <span className="record-meta">Total gain</span>
-          <strong
-            className={portfolioMetrics.gain < 0 ? "negative" : undefined}
-          >
-            {formatMoney(portfolioMetrics.gain)}
-          </strong>
-        </article>
-        <article className="panel stat">
-          <span className="record-meta">MOIC</span>
-          <strong>{formatMultiple(portfolioMetrics.moic)}</strong>
-        </article>
-        <article className="panel stat">
-          <span className="record-meta">XIRR</span>
-          <strong>{formatPercentage(portfolioMetrics.xirr)}</strong>
+          <span className="record-meta">
+            <abbr title="Capital invested plus any recorded fees">Paid in</abbr>
+          </span>
+          <strong>{formatMoney(portfolioMetrics.paidIn)}</strong>
         </article>
         <article className="panel stat">
           <span className="record-meta">
-            Cash returned · DPI {formatMultiple(portfolioMetrics.dpi)}
+            <abbr title="The latest fair value of the unrealized portfolio">
+              Residual value
+            </abbr>
+          </span>
+          <strong>{formatMoney(portfolioMetrics.currentValue)}</strong>
+        </article>
+        <article className="panel stat">
+          <span className="record-meta">
+            <abbr title="Cash returned to KSHR">Distributions</abbr>
           </span>
           <strong>{formatMoney(portfolioMetrics.distributions)}</strong>
         </article>
+        <article className="panel stat">
+          <span className="record-meta">
+            <abbr title="Total Value to Paid-In: distributions plus residual value, divided by paid-in capital">
+              TVPI
+            </abbr>
+          </span>
+          <strong>{formatMultiple(portfolioMetrics.tvpi)}</strong>
+        </article>
+        <article className="panel stat">
+          <span className="record-meta">
+            <abbr title="Distributions to Paid-In: cash returned divided by paid-in capital">
+              DPI
+            </abbr>
+          </span>
+          <strong>{formatMultiple(portfolioMetrics.dpi)}</strong>
+        </article>
+        <article className="panel stat">
+          <span className="record-meta">
+            <abbr title="Annualized return using the actual dates of every contribution, fee, distribution, and latest valuation">
+              IRR
+            </abbr>
+          </span>
+          <strong>{formatPercentage(portfolioMetrics.xirr)}</strong>
+        </article>
       </section>
 
-      <p className="calculation-note">
-        XIRR uses each contribution, fee, and distribution on its actual date,
-        plus the latest fair-value mark as the terminal value.
-      </p>
+      <details className="returns-guide" id="fund-return-guide">
+        <summary>How fund returns work</summary>
+        <dl className="metric-definitions">
+          <div>
+            <dt>TVPI</dt>
+            <dd>
+              Total value ÷ paid-in capital. It combines realized cash and
+              remaining fair value. TVPI = DPI + RVPI.
+            </dd>
+          </div>
+          <div>
+            <dt>DPI</dt>
+            <dd>
+              Distributions ÷ paid-in capital. This is the portion of the fund
+              already returned in cash.
+            </dd>
+          </div>
+          <div>
+            <dt>RVPI</dt>
+            <dd>
+              Residual value ÷ paid-in capital. KSHR is currently at{" "}
+              {formatMultiple(portfolioMetrics.rvpi)} RVPI.
+            </dd>
+          </div>
+          <div>
+            <dt>MOIC</dt>
+            <dd>
+              A holding&apos;s total value ÷ paid-in capital. It shows the
+              multiple earned but does not account for time.
+            </dd>
+          </div>
+          <div>
+            <dt>IRR</dt>
+            <dd>
+              Annualized return using actual cash-flow dates. The latest fair
+              value acts as the terminal value for unrealized holdings.
+            </dd>
+          </div>
+        </dl>
+      </details>
 
-      <section className="action-tray" id="portfolio-actions">
+      <section className="portfolio-table-panel">
+        <div className="sheet-toolbar">
+          <div>
+            <strong>Holdings</strong>
+            <span className="toolbar-subline">
+              Edit source values; returns recalculate automatically.
+            </span>
+          </div>
+          <span className="record-meta">{investments.length} total</span>
+        </div>
+        <div className="table-wrap">
+          <table className="table portfolio-table fund-holdings-table">
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Invested</th>
+                <th>Date</th>
+                <th>Security</th>
+                <th>Stage</th>
+                <th>Ownership</th>
+                <th>Fair value</th>
+                <th>Distributed</th>
+                <th>
+                  <abbr title="Multiple on invested capital">MOIC</abbr>
+                </th>
+                <th>
+                  <abbr title="Annualized return using actual cash-flow dates">
+                    IRR
+                  </abbr>
+                </th>
+                <th>Status</th>
+                <th aria-label="Edit holding" />
+              </tr>
+            </thead>
+            <tbody>
+              {investments.length ? (
+                investments.map((investment) => {
+                  const company = oneRelation(investment.companies);
+                  const metrics = dealMetrics.get(investment.id);
+                  const mark = latestMark(investment);
+                  const isEditing = edit === investment.id;
+
+                  if (!metrics) {
+                    return null;
+                  }
+
+                  return (
+                    <Fragment key={investment.id}>
+                      <tr id={`holding-${investment.id}`}>
+                        <td>
+                          <span className="record-title">
+                            {company?.id ? (
+                              <Link href={`/companies/${company.id}`}>
+                                {company.name}
+                              </Link>
+                            ) : (
+                              "Unknown company"
+                            )}
+                          </span>
+                        </td>
+                        <td className="numeric">
+                          {formatMoney(metrics.invested, investment.currency)}
+                        </td>
+                        <td>{formatDate(investment.invested_on)}</td>
+                        <td>{investment.security ?? "—"}</td>
+                        <td>
+                          <span className="pill">{company?.stage ?? "—"}</span>
+                        </td>
+                        <td className="numeric">
+                          {formatOwnership(investment.ownership_percent)}
+                        </td>
+                        <td className="numeric">
+                          {formatMoney(
+                            metrics.currentValue,
+                            investment.currency,
+                          )}
+                          {metrics.markDate ? (
+                            <span className="table-subline">
+                              {formatDate(metrics.markDate)}
+                            </span>
+                          ) : null}
+                        </td>
+                        <td className="numeric">
+                          {formatMoney(
+                            metrics.distributions,
+                            investment.currency,
+                          )}
+                        </td>
+                        <td className="numeric">
+                          {formatMultiple(metrics.moic)}
+                        </td>
+                        <td
+                          className={`numeric${
+                            metrics.xirr !== null && metrics.xirr < 0
+                              ? " negative"
+                              : ""
+                          }`}
+                        >
+                          {formatPercentage(metrics.xirr)}
+                        </td>
+                        <td>
+                          <span className="pill">{investment.status}</span>
+                        </td>
+                        <td>
+                          <Link
+                            className="text-action"
+                            href={
+                              isEditing
+                                ? `/portfolio#holding-${investment.id}`
+                                : `/portfolio?edit=${investment.id}#holding-${investment.id}`
+                            }
+                          >
+                            {isEditing ? "Close" : "Edit"}
+                          </Link>
+                        </td>
+                      </tr>
+                      {isEditing ? (
+                        <tr className="holding-edit-row">
+                          <td colSpan={12}>
+                            <form
+                              action={updateInvestment}
+                              className="holding-editor"
+                            >
+                              <input
+                                name="id"
+                                type="hidden"
+                                value={investment.id}
+                              />
+                              <input
+                                name="company_id"
+                                type="hidden"
+                                value={investment.company_id}
+                              />
+                              <input
+                                name="valuation_id"
+                                type="hidden"
+                                value={mark?.id ?? ""}
+                              />
+                              <div className="holding-editor-grid">
+                                <label>
+                                  Company
+                                  <input
+                                    defaultValue={company?.name ?? ""}
+                                    name="company_name"
+                                    required
+                                  />
+                                </label>
+                                <label>
+                                  Invested
+                                  <input
+                                    defaultValue={investment.amount ?? ""}
+                                    min="0.01"
+                                    name="amount"
+                                    required
+                                    step="0.01"
+                                    type="number"
+                                  />
+                                </label>
+                                <label>
+                                  Investment date
+                                  <input
+                                    defaultValue={investment.invested_on ?? ""}
+                                    name="invested_on"
+                                    required
+                                    type="date"
+                                  />
+                                </label>
+                                <label>
+                                  Security
+                                  <input
+                                    defaultValue={investment.security ?? ""}
+                                    name="security"
+                                    placeholder="SAFE, Preferred…"
+                                  />
+                                </label>
+                                <label>
+                                  Company stage
+                                  <select
+                                    defaultValue={company?.stage ?? "portfolio"}
+                                    name="stage"
+                                  >
+                                    {companyStages.map((stage) => (
+                                      <option key={stage} value={stage}>
+                                        {stage}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </label>
+                                <label>
+                                  Ownership %
+                                  <input
+                                    defaultValue={
+                                      investment.ownership_percent ?? ""
+                                    }
+                                    min="0"
+                                    name="ownership_percent"
+                                    step="any"
+                                    type="number"
+                                  />
+                                </label>
+                                <label>
+                                  Fair value
+                                  <input
+                                    defaultValue={mark?.fair_value ?? ""}
+                                    min="0"
+                                    name="fair_value"
+                                    placeholder="Unrealized value"
+                                    step="0.01"
+                                    type="number"
+                                  />
+                                </label>
+                                <label>
+                                  Company valuation
+                                  <input
+                                    defaultValue={mark?.company_valuation ?? ""}
+                                    min="0"
+                                    name="company_valuation"
+                                    step="0.01"
+                                    type="number"
+                                  />
+                                </label>
+                                <label>
+                                  Mark date
+                                  <input
+                                    defaultValue={mark?.valued_on ?? today}
+                                    name="valued_on"
+                                    type="date"
+                                  />
+                                </label>
+                                <label>
+                                  Status
+                                  <select
+                                    defaultValue={investment.status}
+                                    name="status"
+                                  >
+                                    {investmentStatuses.map((status) => (
+                                      <option key={status} value={status}>
+                                        {status}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </label>
+                              </div>
+                              <div className="form-actions">
+                                <button className="compact" type="submit">
+                                  Save changes
+                                </button>
+                                <Link
+                                  className="button secondary compact"
+                                  href={`/portfolio#holding-${investment.id}`}
+                                >
+                                  Cancel
+                                </Link>
+                                <span className="record-meta">
+                                  MOIC and IRR recalculate from these values and
+                                  the cash-flow ledger.
+                                </span>
+                              </div>
+                            </form>
+                          </td>
+                        </tr>
+                      ) : null}
+                    </Fragment>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan={12}>
+                    <EmptyState
+                      actionHref="#portfolio-actions"
+                      actionLabel="Add a holding"
+                    >
+                      Add the first holding to begin tracking fund returns.
+                    </EmptyState>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="action-tray fund-actions" id="portfolio-actions">
         <details className="action-panel" id="add-investment">
-          <summary>Add investment</summary>
+          <summary>Add holding</summary>
           <div className="action-panel-body">
             <form action={createInvestment} className="form-stack">
               <label>
@@ -215,18 +576,17 @@ export default async function PortfolioPage({
               </label>
               <div className="form-grid">
                 <label>
-                  Amount
+                  Invested
                   <input
                     min="0.01"
                     name="amount"
-                    placeholder="25000"
                     required
                     step="0.01"
                     type="number"
                   />
                 </label>
                 <label>
-                  Invested on
+                  Investment date
                   <input name="invested_on" required type="date" />
                 </label>
                 <label>
@@ -234,50 +594,26 @@ export default async function PortfolioPage({
                   <input
                     min="0"
                     name="ownership_percent"
-                    placeholder="0.25"
                     step="any"
                     type="number"
                   />
                 </label>
                 <label>
                   Security
-                  <input name="security" placeholder="SAFE, Preferred..." />
-                </label>
-                <label>
-                  Fund
-                  <select name="fund_id">
-                    <option value="">No fund</option>
-                    {funds.map((fund) => (
-                      <option key={fund.id} value={fund.id}>
-                        {fund.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Round
-                  <select name="round_id">
-                    <option value="">No round</option>
-                    {rounds.map((round) => {
-                      const company = oneRelation(round.companies);
-                      return (
-                        <option key={round.id} value={round.id}>
-                          {company?.name ?? "Unknown"} · {round.name}
-                        </option>
-                      );
-                    })}
-                  </select>
+                  <input name="security" placeholder="SAFE, Preferred…" />
                 </label>
                 <label>
                   Status
                   <select defaultValue="active" name="status">
-                    <option value="active">Active</option>
-                    <option value="watching">Watching</option>
-                    <option value="exited">Exited</option>
+                    {investmentStatuses.map((status) => (
+                      <option key={status} value={status}>
+                        {status}
+                      </option>
+                    ))}
                   </select>
                 </label>
               </div>
-              <button type="submit">Add investment</button>
+              <button type="submit">Add holding</button>
             </form>
           </div>
         </details>
@@ -287,9 +623,9 @@ export default async function PortfolioPage({
           <div className="action-panel-body">
             <form action={createInvestmentCashFlow} className="form-stack">
               <label>
-                Investment
+                Holding
                 <select name="investment_id" required>
-                  <option value="">Select investment</option>
+                  <option value="">Select holding</option>
                   {investments.map((investment) => (
                     <option key={investment.id} value={investment.id}>
                       {investmentName(investment)}
@@ -327,10 +663,7 @@ export default async function PortfolioPage({
               </div>
               <label>
                 Notes
-                <textarea
-                  name="notes"
-                  placeholder="Distribution notice, fee detail..."
-                />
+                <textarea name="notes" />
               </label>
               <button type="submit">Record cash flow</button>
             </form>
@@ -338,13 +671,13 @@ export default async function PortfolioPage({
         </details>
 
         <details className="action-panel">
-          <summary>Add valuation mark</summary>
+          <summary>Add valuation</summary>
           <div className="action-panel-body">
             <form action={createInvestmentValuationMark} className="form-stack">
               <label>
-                Investment
+                Holding
                 <select name="investment_id" required>
-                  <option value="">Select investment</option>
+                  <option value="">Select holding</option>
                   {investments.map((investment) => (
                     <option key={investment.id} value={investment.id}>
                       {investmentName(investment)}
@@ -373,7 +706,7 @@ export default async function PortfolioPage({
                   />
                 </label>
                 <label>
-                  Valued on
+                  Mark date
                   <input
                     defaultValue={today}
                     name="valued_on"
@@ -383,143 +716,119 @@ export default async function PortfolioPage({
                 </label>
                 <label>
                   Source
-                  <input name="source" placeholder="Financing, cap table..." />
+                  <input name="source" placeholder="Financing, cap table…" />
                 </label>
               </div>
               <label>
                 Notes
-                <textarea
-                  name="notes"
-                  placeholder="Methodology or supporting context..."
-                />
+                <textarea name="notes" />
               </label>
-              <button type="submit">Save valuation mark</button>
+              <button type="submit">Save valuation</button>
             </form>
           </div>
         </details>
       </section>
 
-      <section className="portfolio-table-panel">
-        <div className="sheet-toolbar">
-          <div>
-            <strong>Investment performance</strong>
-          </div>
-          <span className="record-meta">
-            MOIC includes current value and cash returned.
-          </span>
-        </div>
+      <details
+        className="data-ledger"
+        id="cash-flow-ledger"
+        open={error?.startsWith("cash_flow_") || updated === "cash_flow"}
+      >
+        <summary>
+          Cash-flow ledger
+          <span>{editableCashFlows.length} distributions and fees</span>
+        </summary>
+        <p className="calculation-note">
+          Initial contributions stay synchronized with each holding&apos;s
+          invested amount and date.
+        </p>
         <div className="table-wrap">
-          <table className="table portfolio-table">
+          <table className="table cash-flow-table">
             <thead>
               <tr>
                 <th>Company</th>
-                <th>Date</th>
                 <th>Type</th>
-                <th>Stage</th>
-                <th>Invested</th>
-                <th>Valuation / cap</th>
-                <th>Ownership</th>
-                <th>Current value</th>
-                <th>Cash returned</th>
-                <th>MOIC</th>
-                <th>XIRR</th>
-                <th>Latest valuation</th>
-                <th>Status</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Notes</th>
+                <th aria-label="Save cash flow" />
               </tr>
             </thead>
             <tbody>
-              {investments.length ? (
-                investments.map((investment) => {
-                  const company = oneRelation(investment.companies);
-                  const fund = oneRelation(investment.funds);
-                  const round = oneRelation(investment.rounds);
-                  const metrics = dealMetrics.get(investment.id);
-                  const mark = latestMark(investment);
-
-                  if (!metrics) {
-                    return null;
-                  }
+              {editableCashFlows.length ? (
+                editableCashFlows.map((cashFlow) => {
+                  const formId = `cash-flow-${cashFlow.id}`;
 
                   return (
-                    <tr key={investment.id}>
+                    <tr key={cashFlow.id}>
                       <td>
-                        <span className="record-title">
-                          {company?.id ? (
-                            <Link href={`/companies/${company.id}`}>
-                              {company.name}
-                            </Link>
-                          ) : (
-                            "Unknown company"
-                          )}
-                        </span>
-                        <span className="table-subline">
-                          {fund?.name ? ` · ${fund.name}` : ""}
-                        </span>
-                      </td>
-                      <td>{formatDate(investment.invested_on)}</td>
-                      <td>{investment.security ?? "—"}</td>
-                      <td>
-                        <span className="pill">{company?.stage ?? "—"}</span>
-                      </td>
-                      <td className="numeric">
-                        {formatMoney(metrics.invested, investment.currency)}
-                      </td>
-                      <td className="numeric">
-                        {round?.post_money_valuation
-                          ? formatMoney(
-                              round.post_money_valuation,
-                              investment.currency,
-                            )
-                          : "—"}
-                      </td>
-                      <td className="numeric">
-                        {formatOwnership(investment.ownership_percent)}
-                      </td>
-                      <td className="numeric">
-                        {formatMoney(metrics.currentValue, investment.currency)}
-                      </td>
-                      <td className="numeric">
-                        {formatMoney(
-                          metrics.distributions,
-                          investment.currency,
-                        )}
-                      </td>
-                      <td className="numeric">
-                        {formatMultiple(metrics.moic)}
-                      </td>
-                      <td
-                        className={`numeric${
-                          metrics.xirr !== null && metrics.xirr < 0
-                            ? " negative"
-                            : ""
-                        }`}
-                      >
-                        {formatPercentage(metrics.xirr)}
+                        <form action={updateInvestmentCashFlow} id={formId}>
+                          <input name="id" type="hidden" value={cashFlow.id} />
+                          <input
+                            name="investment_id"
+                            type="hidden"
+                            value={cashFlow.investmentId}
+                          />
+                        </form>
+                        <span className="record-title">{cashFlow.company}</span>
                       </td>
                       <td>
-                        {mark?.company_valuation
-                          ? formatMoney(
-                              mark.company_valuation,
-                              investment.currency,
-                            )
-                          : "—"}
-                        {metrics.markDate ? (
-                          <span className="table-subline">
-                            {formatDate(metrics.markDate)}
-                          </span>
-                        ) : null}
+                        <select
+                          aria-label={`${cashFlow.company} cash-flow type`}
+                          defaultValue={cashFlow.cash_flow_type}
+                          form={formId}
+                          name="cash_flow_type"
+                        >
+                          <option value="distribution">Distribution</option>
+                          <option value="fee">Fee</option>
+                        </select>
                       </td>
                       <td>
-                        <span className="pill">{investment.status}</span>
+                        <input
+                          aria-label={`${cashFlow.company} cash-flow date`}
+                          defaultValue={cashFlow.occurred_on}
+                          form={formId}
+                          name="occurred_on"
+                          required
+                          type="date"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          aria-label={`${cashFlow.company} cash-flow amount`}
+                          defaultValue={cashFlow.amount}
+                          form={formId}
+                          min="0.01"
+                          name="amount"
+                          required
+                          step="0.01"
+                          type="number"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          aria-label={`${cashFlow.company} cash-flow notes`}
+                          defaultValue={cashFlow.notes ?? ""}
+                          form={formId}
+                          name="notes"
+                        />
+                      </td>
+                      <td>
+                        <button className="secondary compact" form={formId}>
+                          Save
+                        </button>
                       </td>
                     </tr>
                   );
                 })
               ) : (
                 <tr>
-                  <td colSpan={13}>
-                    <EmptyState>
-                      Add the first investment to begin tracking returns.
+                  <td colSpan={6}>
+                    <EmptyState
+                      actionHref="#portfolio-actions"
+                      actionLabel="Record a cash flow"
+                    >
+                      No distributions or fees recorded yet.
                     </EmptyState>
                   </td>
                 </tr>
@@ -527,84 +836,7 @@ export default async function PortfolioPage({
             </tbody>
           </table>
         </div>
-      </section>
-
-      <section className="action-tray portfolio-structure-grid">
-        <details className="action-panel">
-          <summary>Add fund</summary>
-          <div className="action-panel-body">
-            <form action={createFund} className="form-stack">
-              <div className="form-grid">
-                <label>
-                  Name
-                  <input name="name" required />
-                </label>
-                <label>
-                  Vintage year
-                  <input inputMode="numeric" name="vintage_year" />
-                </label>
-              </div>
-              <label>
-                Description
-                <textarea name="description" />
-              </label>
-              <button type="submit">Create fund</button>
-            </form>
-          </div>
-        </details>
-
-        <details className="action-panel">
-          <summary>Add financing round</summary>
-          <div className="action-panel-body">
-            <form action={createRound} className="form-stack">
-              <label>
-                Company
-                <select name="company_id" required>
-                  <option value="">Select company</option>
-                  {companies.map((company) => (
-                    <option key={company.id} value={company.id}>
-                      {company.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div className="form-grid">
-                <label>
-                  Name
-                  <input name="name" placeholder="Seed, Series A..." required />
-                </label>
-                <label>
-                  Type
-                  <input name="round_type" />
-                </label>
-                <label>
-                  Announced
-                  <input name="announced_on" type="date" />
-                </label>
-                <label>
-                  Amount raised
-                  <input
-                    min="0"
-                    name="amount_raised"
-                    step="0.01"
-                    type="number"
-                  />
-                </label>
-                <label>
-                  Post-money valuation
-                  <input
-                    min="0"
-                    name="post_money_valuation"
-                    step="0.01"
-                    type="number"
-                  />
-                </label>
-              </div>
-              <button type="submit">Create round</button>
-            </form>
-          </div>
-        </details>
-      </section>
+      </details>
     </>
   );
 }

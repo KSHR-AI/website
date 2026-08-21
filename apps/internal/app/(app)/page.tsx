@@ -1,75 +1,96 @@
 import Link from "next/link";
 
 import { EmptyState } from "@/components/empty-state";
-import { formatDate, formatMoney, oneRelation } from "@/lib/format";
+import {
+  formatDate,
+  formatMoney,
+  formatMultiple,
+  formatPercentage,
+  oneRelation,
+} from "@/lib/format";
+import {
+  calculatePortfolioMetrics,
+  type InvestmentCashFlow,
+  type PortfolioInvestment,
+} from "@/lib/portfolio";
 import { requireActiveUser } from "@/lib/supabase/server";
 
 export default async function DashboardPage() {
   const { supabase } = await requireActiveUser();
 
-  const [companies, tasks, diligence, investments, activities] =
-    await Promise.all([
-      supabase.from("companies").select("id", { count: "exact", head: true }),
-      supabase
-        .from("tasks")
-        .select("id,title,due_at,status")
-        .eq("status", "open")
-        .order("due_at", { ascending: true })
-        .limit(6),
-      supabase
-        .from("companies")
-        .select("id,name,stage")
-        .eq("stage", "diligence")
-        .order("updated_at", { ascending: false })
-        .limit(6),
-      supabase
-        .from("investments")
-        .select("id,amount,currency,status,companies(name)")
-        .order("created_at", { ascending: false })
-        .limit(6),
-      supabase
-        .from("activity_log")
-        .select("id,action,created_at,entity_type")
-        .order("created_at", { ascending: false })
-        .limit(8),
-    ]);
+  const [tasks, diligence, investments, activities] = await Promise.all([
+    supabase
+      .from("tasks")
+      .select("id,title,due_at,status")
+      .eq("status", "open")
+      .order("due_at", { ascending: true })
+      .limit(6),
+    supabase
+      .from("companies")
+      .select("id,name,stage")
+      .eq("stage", "diligence")
+      .order("updated_at", { ascending: false })
+      .limit(6),
+    supabase
+      .from("investments")
+      .select(
+        "id,amount,currency,status,invested_on,companies(name),investment_cash_flows(amount,cash_flow_type,occurred_on),investment_valuation_marks(fair_value,valued_on)",
+      )
+      .order("invested_on", { ascending: false }),
+    supabase
+      .from("activity_log")
+      .select("id,action,created_at,entity_type")
+      .order("created_at", { ascending: false })
+      .limit(8),
+  ]);
 
-  const activeInvestmentTotal = (investments.data ?? []).reduce(
-    (sum, investment) => {
-      const amount =
-        typeof investment.amount === "number"
-          ? investment.amount
-          : Number(investment.amount ?? 0);
-      return Number.isFinite(amount) ? sum + amount : sum;
-    },
-    0,
+  const fundMetrics = calculatePortfolioMetrics(
+    (investments.data ?? []).map(
+      (investment) =>
+        ({
+          amount: investment.amount,
+          cashFlows: investment.investment_cash_flows.map((cashFlow) => ({
+            amount: cashFlow.amount,
+            cash_flow_type:
+              cashFlow.cash_flow_type as InvestmentCashFlow["cash_flow_type"],
+            occurred_on: cashFlow.occurred_on,
+          })),
+          investedOn: investment.invested_on,
+          status: investment.status,
+          valuations: investment.investment_valuation_marks,
+        }) satisfies PortfolioInvestment,
+    ),
   );
 
   return (
     <>
       <header className="page-header">
         <div>
-          <p className="eyebrow">Overview</p>
-          <h1>Workspace</h1>
-          <p>Portfolio, diligence, and relationship work in one place.</p>
+          <p className="eyebrow">KSHR</p>
+          <h1>Overview</h1>
+          <p>Holdings, returns, diligence, and follow-ups.</p>
         </div>
-        <Link className="button" href="/companies">
-          New company
+        <Link className="button compact" href="/portfolio">
+          Open fund
         </Link>
       </header>
 
-      <section className="grid three metric-strip">
+      <section className="grid four metric-strip metric-strip-four">
         <article className="panel stat">
-          <span className="record-meta">Companies</span>
-          <strong>{companies.count ?? 0}</strong>
+          <span className="record-meta">Paid in</span>
+          <strong>{formatMoney(fundMetrics.paidIn)}</strong>
         </article>
         <article className="panel stat">
-          <span className="record-meta">Open tasks</span>
-          <strong>{tasks.data?.length ?? 0}</strong>
+          <span className="record-meta">Fair value</span>
+          <strong>{formatMoney(fundMetrics.currentValue)}</strong>
         </article>
         <article className="panel stat">
-          <span className="record-meta">Recent investment amount</span>
-          <strong>{formatMoney(activeInvestmentTotal)}</strong>
+          <span className="record-meta">TVPI</span>
+          <strong>{formatMultiple(fundMetrics.tvpi)}</strong>
+        </article>
+        <article className="panel stat">
+          <span className="record-meta">IRR</span>
+          <strong>{formatPercentage(fundMetrics.xirr)}</strong>
         </article>
       </section>
 
@@ -123,7 +144,7 @@ export default async function DashboardPage() {
           <h2>Portfolio snapshot</h2>
           <div className="record-list">
             {(investments.data ?? []).length ? (
-              investments.data?.map((investment) => {
+              investments.data?.slice(0, 6).map((investment) => {
                 const company = oneRelation(investment.companies);
 
                 return (
@@ -141,9 +162,9 @@ export default async function DashboardPage() {
             ) : (
               <EmptyState
                 actionHref="/portfolio#portfolio-actions"
-                actionLabel="Add an investment"
+                actionLabel="Add a holding"
               >
-                No investments are recorded.
+                No holdings are recorded.
               </EmptyState>
             )}
           </div>

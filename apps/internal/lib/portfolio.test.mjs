@@ -51,6 +51,9 @@ test("investment metrics include distributions and the latest valuation", () => 
   assert.equal(metrics.currentValue, 1_500);
   assert.equal(metrics.distributions, 100);
   assert.equal(metrics.moic, 1.6);
+  assert.equal(metrics.dpi, 0.1);
+  assert.equal(metrics.rvpi, 1.5);
+  assert.equal(metrics.tvpi, 1.6);
   assert.equal(metrics.markDate, "2025-01-01");
 });
 
@@ -90,6 +93,9 @@ test("portfolio metrics aggregate deal cash flows instead of averaging deal IRRs
   assert.equal(metrics.invested, 3_000);
   assert.equal(metrics.currentValue, 4_000);
   assert.equal(metrics.moic, 4 / 3);
+  assert.equal(metrics.dpi, 0);
+  assert.equal(metrics.rvpi, 4 / 3);
+  assert.equal(metrics.tvpi, 4 / 3);
   assert.equal(metrics.activeInvestments, 2);
   assert.equal(metrics.markedAboveCost, 1);
   assert.ok(metrics.xirr !== null && metrics.xirr > 0);

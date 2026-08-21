@@ -424,6 +424,115 @@ export async function createInvestment(formData: FormData) {
   revalidatePath(`/companies/${companyId}`);
 }
 
+export async function updateInvestment(formData: FormData) {
+  const { supabase, user } = await requireActiveUser();
+  const id = formString(formData, "id");
+  const companyId = formString(formData, "company_id");
+  const companyName = formString(formData, "company_name");
+  const investedOn = formString(formData, "invested_on");
+  const amount = formNumber(formData, "amount");
+  const ownershipPercent = formNumber(formData, "ownership_percent");
+  const stage = formString(formData, "stage");
+  const status = formString(formData, "status");
+  const valuationId = formString(formData, "valuation_id");
+  const valuedOn = formString(formData, "valued_on");
+  const fairValue = formNumber(formData, "fair_value");
+  const companyValuation = formNumber(formData, "company_valuation");
+  const allowedStages = new Set([
+    "prospect",
+    "diligence",
+    "portfolio",
+    "passed",
+    "exited",
+  ]);
+  const allowedStatuses = new Set(["active", "watching", "passed", "exited"]);
+
+  if (
+    !id ||
+    !companyId ||
+    !companyName ||
+    !investedOn ||
+    amount === null ||
+    amount <= 0 ||
+    (ownershipPercent !== null && ownershipPercent < 0) ||
+    !stage ||
+    !allowedStages.has(stage) ||
+    !status ||
+    !allowedStatuses.has(status) ||
+    (fairValue !== null && fairValue < 0) ||
+    (companyValuation !== null && companyValuation < 0) ||
+    ((valuationId || fairValue !== null) && !valuedOn)
+  ) {
+    redirect(`/portfolio?error=investment_update_required&edit=${id ?? ""}`);
+  }
+
+  const { data: investment, error: investmentError } = await supabase
+    .from("investments")
+    .update({
+      amount,
+      invested_on: investedOn,
+      ownership_percent: ownershipPercent,
+      security: formString(formData, "security"),
+      status,
+    })
+    .eq("id", id)
+    .eq("company_id", companyId)
+    .select("id")
+    .single();
+
+  if (investmentError || !investment) {
+    redirect(`/portfolio?error=investment_update_failed&edit=${id}`);
+  }
+
+  const { error: companyError } = await supabase
+    .from("companies")
+    .update({ name: companyName, stage })
+    .eq("id", companyId);
+
+  if (companyError) {
+    redirect(`/portfolio?error=investment_update_failed&edit=${id}`);
+  }
+
+  if (valuationId && fairValue !== null && valuedOn) {
+    const { error: valuationError } = await supabase
+      .from("investment_valuation_marks")
+      .update({
+        company_valuation: companyValuation,
+        fair_value: fairValue,
+        valued_on: valuedOn,
+      })
+      .eq("id", valuationId)
+      .eq("investment_id", id);
+
+    if (valuationError) {
+      redirect(`/portfolio?error=investment_update_failed&edit=${id}`);
+    }
+  } else if (fairValue !== null && valuedOn) {
+    const { error: valuationError } = await supabase
+      .from("investment_valuation_marks")
+      .insert({
+        company_valuation: companyValuation,
+        fair_value: fairValue,
+        investment_id: id,
+        valued_on: valuedOn,
+        source: "Manual portfolio edit",
+        created_by: user.id,
+      });
+
+    if (valuationError) {
+      redirect(`/portfolio?error=investment_update_failed&edit=${id}`);
+    }
+  }
+
+  await logActivity("updated_investment", "investment", id, {
+    company_id: companyId,
+  });
+  revalidatePath("/");
+  revalidatePath("/portfolio");
+  revalidatePath(`/companies/${companyId}`);
+  redirect(`/portfolio?updated=investment#holding-${id}`);
+}
+
 export async function createInvestmentCashFlow(formData: FormData) {
   const { supabase, user } = await requireActiveUser();
   const investmentId = formString(formData, "investment_id");
@@ -466,6 +575,59 @@ export async function createInvestmentCashFlow(formData: FormData) {
     },
   );
   revalidatePath("/portfolio");
+}
+
+export async function updateInvestmentCashFlow(formData: FormData) {
+  const { supabase } = await requireActiveUser();
+  const id = formString(formData, "id");
+  const investmentId = formString(formData, "investment_id");
+  const occurredOn = formString(formData, "occurred_on");
+  const cashFlowType = formString(formData, "cash_flow_type");
+  const amount = formNumber(formData, "amount");
+  const allowedTypes = new Set(["distribution", "fee"]);
+
+  if (
+    !id ||
+    !investmentId ||
+    !occurredOn ||
+    !cashFlowType ||
+    !allowedTypes.has(cashFlowType) ||
+    amount === null ||
+    amount <= 0
+  ) {
+    redirect("/portfolio?error=cash_flow_update_required#cash-flow-ledger");
+  }
+
+  const { data, error } = await supabase
+    .from("investment_cash_flows")
+    .update({
+      amount,
+      cash_flow_type: cashFlowType,
+      notes: formString(formData, "notes"),
+      occurred_on: occurredOn,
+    })
+    .eq("id", id)
+    .eq("investment_id", investmentId)
+    .eq("is_initial_contribution", false)
+    .select("id")
+    .single();
+
+  if (error || !data) {
+    redirect("/portfolio?error=cash_flow_update_failed#cash-flow-ledger");
+  }
+
+  await logActivity(
+    "updated_investment_cash_flow",
+    "investment",
+    investmentId,
+    {
+      amount,
+      cash_flow_type: cashFlowType,
+    },
+  );
+  revalidatePath("/");
+  revalidatePath("/portfolio");
+  redirect("/portfolio?updated=cash_flow#cash-flow-ledger");
 }
 
 export async function createInvestmentValuationMark(formData: FormData) {
