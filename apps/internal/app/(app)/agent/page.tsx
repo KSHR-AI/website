@@ -64,7 +64,10 @@ function daysSince(value: string | null | undefined) {
   return Math.floor((Date.now() - new Date(value).getTime()) / dayMs);
 }
 
-function maxDate(existing: string | null | undefined, next: string | null | undefined) {
+function maxDate(
+  existing: string | null | undefined,
+  next: string | null | undefined,
+) {
   if (!existing) {
     return next ?? null;
   }
@@ -73,7 +76,9 @@ function maxDate(existing: string | null | undefined, next: string | null | unde
     return existing;
   }
 
-  return new Date(next).getTime() > new Date(existing).getTime() ? next : existing;
+  return new Date(next).getTime() > new Date(existing).getTime()
+    ? next
+    : existing;
 }
 
 function dueDate(daysFromNow: number) {
@@ -83,16 +88,35 @@ function dueDate(daysFromNow: number) {
 export default async function AgentPage() {
   const { supabase } = await requireActiveUser();
 
-  const [companiesResult, interactionsResult, tasksResult, contactsResult, notesResult, investmentsResult, metricsResult] =
-    await Promise.all([
-      supabase.from("companies").select("id,name,stage,description,created_at,updated_at").order("updated_at", { ascending: false }),
-      supabase.from("interactions").select("company_id,occurred_at").order("occurred_at", { ascending: false }),
-      supabase.from("tasks").select("id,title,entity_id,due_at,status").eq("status", "open"),
-      supabase.from("company_contacts").select("company_id"),
-      supabase.from("notes").select("entity_id,created_at").eq("entity_type", "company"),
-      supabase.from("investments").select("company_id"),
-      supabase.from("portfolio_metrics").select("company_id,measured_on")
-    ]);
+  const [
+    companiesResult,
+    interactionsResult,
+    tasksResult,
+    contactsResult,
+    notesResult,
+    investmentsResult,
+    metricsResult,
+  ] = await Promise.all([
+    supabase
+      .from("companies")
+      .select("id,name,stage,description,created_at,updated_at")
+      .order("updated_at", { ascending: false }),
+    supabase
+      .from("interactions")
+      .select("company_id,occurred_at")
+      .order("occurred_at", { ascending: false }),
+    supabase
+      .from("tasks")
+      .select("id,title,entity_id,due_at,status")
+      .eq("status", "open"),
+    supabase.from("company_contacts").select("company_id"),
+    supabase
+      .from("notes")
+      .select("entity_id,created_at")
+      .eq("entity_type", "company"),
+    supabase.from("investments").select("company_id"),
+    supabase.from("portfolio_metrics").select("company_id,measured_on"),
+  ]);
 
   const companies = (companiesResult.data ?? []) as Company[];
   const interactions = (interactionsResult.data ?? []) as Interaction[];
@@ -106,24 +130,37 @@ export default async function AgentPage() {
   const lastNoteByCompany = new Map<string, string | null>();
   const lastMetricByCompany = new Map<string, string | null>();
   const openTasksByCompany = new Map<string, Task[]>();
-  const companiesWithContacts = new Set(contacts.map((contact) => contact.company_id));
-  const companiesWithInvestments = new Set(investments.map((investment) => investment.company_id));
+  const companiesWithContacts = new Set(
+    contacts.map((contact) => contact.company_id),
+  );
+  const companiesWithInvestments = new Set(
+    investments.map((investment) => investment.company_id),
+  );
 
   interactions.forEach((interaction) => {
     if (interaction.company_id) {
       lastInteractionByCompany.set(
         interaction.company_id,
-        maxDate(lastInteractionByCompany.get(interaction.company_id), interaction.occurred_at)
+        maxDate(
+          lastInteractionByCompany.get(interaction.company_id),
+          interaction.occurred_at,
+        ),
       );
     }
   });
 
   notes.forEach((note) => {
-    lastNoteByCompany.set(note.entity_id, maxDate(lastNoteByCompany.get(note.entity_id), note.created_at));
+    lastNoteByCompany.set(
+      note.entity_id,
+      maxDate(lastNoteByCompany.get(note.entity_id), note.created_at),
+    );
   });
 
   metrics.forEach((metric) => {
-    lastMetricByCompany.set(metric.company_id, maxDate(lastMetricByCompany.get(metric.company_id), metric.measured_on));
+    lastMetricByCompany.set(
+      metric.company_id,
+      maxDate(lastMetricByCompany.get(metric.company_id), metric.measured_on),
+    );
   });
 
   openTasks.forEach((task) => {
@@ -152,18 +189,24 @@ export default async function AgentPage() {
           label: "Missing founder contact",
           reason: "No linked contact is recorded.",
           taskTitle: `Add founder contact for ${company.name}`,
-          dueAt: dueDate(1)
+          dueAt: dueDate(1),
         });
       }
 
-      if (["prospect", "diligence"].includes(company.stage) && staleDays > 14 && tasksForCompany.length === 0) {
+      if (
+        ["prospect", "diligence"].includes(company.stage) &&
+        staleDays > 14 &&
+        tasksForCompany.length === 0
+      ) {
         items.push({
           company,
           priority: company.stage === "diligence" ? 90 : 75,
           label: "Follow-up due",
-          reason: lastInteraction ? `Last touch was ${formatDate(lastInteraction)}.` : "No interaction has been logged.",
+          reason: lastInteraction
+            ? `Last touch was ${formatDate(lastInteraction)}.`
+            : "No interaction has been logged.",
           taskTitle: `Follow up with ${company.name}`,
-          dueAt: dueDate(company.stage === "diligence" ? 1 : 3)
+          dueAt: dueDate(company.stage === "diligence" ? 1 : 3),
         });
       }
 
@@ -172,20 +215,25 @@ export default async function AgentPage() {
           company,
           priority: 80,
           label: "Diligence note stale",
-          reason: lastNote ? `Last note was ${formatDate(lastNote)}.` : "No diligence note is recorded.",
+          reason: lastNote
+            ? `Last note was ${formatDate(lastNote)}.`
+            : "No diligence note is recorded.",
           taskTitle: `Update diligence notes for ${company.name}`,
-          dueAt: dueDate(2)
+          dueAt: dueDate(2),
         });
       }
 
-      if (company.stage === "portfolio" && !companiesWithInvestments.has(company.id)) {
+      if (
+        company.stage === "portfolio" &&
+        !companiesWithInvestments.has(company.id)
+      ) {
         items.push({
           company,
           priority: 85,
           label: "Investment record missing",
           reason: "Portfolio company has no linked investment record.",
           taskTitle: `Add investment record for ${company.name}`,
-          dueAt: dueDate(2)
+          dueAt: dueDate(2),
         });
       }
 
@@ -194,9 +242,11 @@ export default async function AgentPage() {
           company,
           priority: 70,
           label: "Metric update due",
-          reason: lastMetric ? `Last metric was ${formatDate(lastMetric)}.` : "No portfolio metric is recorded.",
+          reason: lastMetric
+            ? `Last metric was ${formatDate(lastMetric)}.`
+            : "No portfolio metric is recorded.",
           taskTitle: `Update portfolio metrics for ${company.name}`,
-          dueAt: dueDate(5)
+          dueAt: dueDate(5),
         });
       }
 
@@ -206,12 +256,23 @@ export default async function AgentPage() {
     .slice(0, 12);
 
   const relationshipCoverage = companies.length
-    ? Math.round((companies.filter((company) => companiesWithContacts.has(company.id)).length / companies.length) * 100)
+    ? Math.round(
+        (companies.filter((company) => companiesWithContacts.has(company.id))
+          .length /
+          companies.length) *
+          100,
+      )
     : 0;
-  const staleCompanies = companies.filter((company) => daysSince(lastInteractionByCompany.get(company.id)) > 14).length;
-  const diligenceCompanies = companies.filter((company) => company.stage === "diligence").length;
+  const staleCompanies = companies.filter(
+    (company) => daysSince(lastInteractionByCompany.get(company.id)) > 14,
+  ).length;
+  const diligenceCompanies = companies.filter(
+    (company) => company.stage === "diligence",
+  ).length;
   const portfolioMetricGaps = companies.filter(
-    (company) => company.stage === "portfolio" && daysSince(lastMetricByCompany.get(company.id)) > 45
+    (company) =>
+      company.stage === "portfolio" &&
+      daysSince(lastMetricByCompany.get(company.id)) > 45,
   ).length;
 
   return (
@@ -219,12 +280,12 @@ export default async function AgentPage() {
       <header className="page-header">
         <div>
           <p className="eyebrow">Relationship agent</p>
-          <h1>Founder tracking</h1>
-          <p>Signals, gaps, and follow-ups across prospects, diligence, and portfolio companies.</p>
+          <h1>Signals</h1>
+          <p>Relationship gaps and next actions, ranked by urgency.</p>
         </div>
       </header>
 
-      <section className="grid four">
+      <section className="grid four metric-strip metric-strip-four">
         <article className="panel stat">
           <span className="record-meta">Relationship coverage</span>
           <strong>{relationshipCoverage}%</strong>
@@ -248,18 +309,33 @@ export default async function AgentPage() {
         <div className="record-list">
           {signals.length ? (
             signals.map((signal) => (
-              <div className="record-item" key={`${signal.company.id}-${signal.label}`}>
+              <div
+                className="record-item"
+                key={`${signal.company.id}-${signal.label}`}
+              >
                 <span className="record-title">
-                  {signal.label}: <Link href={`/companies/${signal.company.id}`}>{signal.company.name}</Link>
+                  {signal.label}:{" "}
+                  <Link href={`/companies/${signal.company.id}`}>
+                    {signal.company.name}
+                  </Link>
                 </span>
                 <span className="record-meta">
-                  Priority {signal.priority} · {signal.company.stage} · {signal.reason}
+                  Priority {signal.priority} · {signal.company.stage} ·{" "}
+                  {signal.reason}
                 </span>
                 <form action={createTask} className="inline-form">
                   <input name="title" type="hidden" value={signal.taskTitle} />
                   <input name="entity_type" type="hidden" value="company" />
-                  <input name="entity_id" type="hidden" value={signal.company.id} />
-                  <input name="due_at" type="hidden" value={toDateTimeInputValue(signal.dueAt)} />
+                  <input
+                    name="entity_id"
+                    type="hidden"
+                    value={signal.company.id}
+                  />
+                  <input
+                    name="due_at"
+                    type="hidden"
+                    value={toDateTimeInputValue(signal.dueAt)}
+                  />
                   <button className="button secondary" type="submit">
                     Create task
                   </button>
@@ -267,7 +343,9 @@ export default async function AgentPage() {
               </div>
             ))
           ) : (
-            <EmptyState>No relationship gaps detected.</EmptyState>
+            <EmptyState actionHref="/companies" actionLabel="Review companies">
+              No relationship gaps detected.
+            </EmptyState>
           )}
         </div>
       </section>
@@ -280,11 +358,15 @@ export default async function AgentPage() {
               openTasks.slice(0, 8).map((task) => (
                 <div className="record-item" key={task.id}>
                   <span className="record-title">{task.title}</span>
-                  <span className="record-meta">Due {formatDate(task.due_at)}</span>
+                  <span className="record-meta">
+                    Due {formatDate(task.due_at)}
+                  </span>
                 </div>
               ))
             ) : (
-              <EmptyState>No open follow-ups.</EmptyState>
+              <EmptyState actionHref="/tasks" actionLabel="Add a task">
+                No open founder follow-ups.
+              </EmptyState>
             )}
           </div>
         </article>
@@ -292,18 +374,30 @@ export default async function AgentPage() {
         <article className="panel">
           <h2>Diligence watchlist</h2>
           <div className="record-list">
-            {companies
-              .filter((company) => company.stage === "diligence")
-              .slice(0, 8)
-              .map((company) => (
-                <Link className="record-item" href={`/companies/${company.id}`} key={company.id}>
-                  <span className="record-title">{company.name}</span>
-                  <span className="record-meta">
-                    Last touch {formatDate(lastInteractionByCompany.get(company.id))} · Last note{" "}
-                    {formatDate(lastNoteByCompany.get(company.id))}
-                  </span>
-                </Link>
-              ))}
+            {companies.filter((company) => company.stage === "diligence")
+              .length ? (
+              companies
+                .filter((company) => company.stage === "diligence")
+                .slice(0, 8)
+                .map((company) => (
+                  <Link
+                    className="record-item"
+                    href={`/companies/${company.id}`}
+                    key={company.id}
+                  >
+                    <span className="record-title">{company.name}</span>
+                    <span className="record-meta">
+                      Last touch{" "}
+                      {formatDate(lastInteractionByCompany.get(company.id))} ·
+                      Last note {formatDate(lastNoteByCompany.get(company.id))}
+                    </span>
+                  </Link>
+                ))
+            ) : (
+              <EmptyState actionHref="/companies" actionLabel="Review pipeline">
+                No companies are in diligence.
+              </EmptyState>
+            )}
           </div>
         </article>
       </section>

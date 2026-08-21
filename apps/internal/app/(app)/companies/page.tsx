@@ -9,10 +9,13 @@ type CompaniesPageProps = {
 
 const stages = ["prospect", "diligence", "portfolio", "passed", "exited"];
 
-export default async function CompaniesPage({ searchParams }: CompaniesPageProps) {
+export default async function CompaniesPage({
+  searchParams,
+}: CompaniesPageProps) {
   const { supabase } = await requireActiveUser();
   const params = await searchParams;
   const stage = typeof params.stage === "string" ? params.stage : "";
+  const error = typeof params.error === "string" ? params.error : "";
 
   let query = supabase
     .from("companies")
@@ -31,67 +34,77 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
         <div>
           <p className="eyebrow">CRM</p>
           <h1>Companies</h1>
-          <p>Track prospects, diligence, portfolio companies, and passed opportunities.</p>
+          <p>
+            One index for pipeline, diligence, portfolio companies, and passes.
+          </p>
         </div>
       </header>
 
-      <section className="grid two">
-        <article className="panel">
-          <h2>Add company</h2>
-          <form action={createCompany} className="form-stack">
-            <div className="form-grid">
-              <label>
-                Name
-                <input name="name" required />
-              </label>
-              <label>
-                Website
-                <input name="website" placeholder="https://example.com" />
-              </label>
-              <label>
-                Stage
-                <select name="stage" defaultValue="prospect">
-                  {stages.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Founded year
-                <input name="founded_year" inputMode="numeric" />
-              </label>
-            </div>
-            <label>
-              Description
-              <textarea name="description" />
-            </label>
-            <button type="submit">Create company</button>
-          </form>
-        </article>
+      {error ? (
+        <p className="alert">
+          The company could not be saved. Check the required fields.
+        </p>
+      ) : null}
 
-        <article className="panel">
-          <h2>Filter</h2>
-          <form className="form-stack">
-            <label>
-              Stage
-              <select name="stage" defaultValue={stage}>
-                <option value="">All stages</option>
-                {stages.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button type="submit">Apply filter</button>
-          </form>
-        </article>
+      <section className="sheet-toolbar">
+        <div className="toolbar-actions">
+          <details className="action-panel" id="add-company">
+            <summary>New company</summary>
+            <div className="action-panel-body">
+              <form action={createCompany} className="form-stack">
+                <div className="form-grid">
+                  <label>
+                    Name
+                    <input name="name" required />
+                  </label>
+                  <label>
+                    Website
+                    <input name="website" placeholder="https://example.com" />
+                  </label>
+                  <label>
+                    Stage
+                    <select name="stage" defaultValue="prospect">
+                      {stages.map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Founded year
+                    <input name="founded_year" inputMode="numeric" />
+                  </label>
+                </div>
+                <label>
+                  Description
+                  <textarea name="description" />
+                </label>
+                <button type="submit">Create company</button>
+              </form>
+            </div>
+          </details>
+          <span className="record-meta">{companies?.length ?? 0} rows</span>
+        </div>
+        <form className="inline-filter">
+          <label>
+            Stage
+            <select name="stage" defaultValue={stage}>
+              <option value="">All stages</option>
+              {stages.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="button secondary compact" type="submit">
+            Apply
+          </button>
+        </form>
       </section>
 
-      <section className="panel" style={{ marginTop: 16 }}>
-        <h2>Company index</h2>
+      <section className="table-wrap">
         <table className="table">
           <thead>
             <tr>
@@ -110,10 +123,23 @@ export default async function CompaniesPage({ searchParams }: CompaniesPageProps
                 <td>
                   <span className="pill">{company.stage}</span>
                 </td>
-                <td>{company.website ? <a href={company.website}>{company.website}</a> : "—"}</td>
+                <td>
+                  {company.website ? (
+                    <a href={company.website} rel="noreferrer" target="_blank">
+                      {company.website.replace(/^https?:\/\//, "")}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </td>
                 <td>{company.description ?? "—"}</td>
               </tr>
             ))}
+            {(companies ?? []).length === 0 ? (
+              <tr>
+                <td colSpan={4}>No companies match this stage.</td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </section>
