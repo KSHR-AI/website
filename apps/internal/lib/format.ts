@@ -21,10 +21,13 @@ export function formatPercentage(
     return "—";
   }
 
+  const roundsToZeroBelow = 0.5 * 10 ** -(maximumFractionDigits + 2);
+  const normalizedValue = Math.abs(value) < roundsToZeroBelow ? 0 : value;
+
   return new Intl.NumberFormat("en-US", {
     style: "percent",
     maximumFractionDigits,
-  }).format(value);
+  }).format(normalizedValue);
 }
 
 export function formatMultiple(value: number | null | undefined) {
