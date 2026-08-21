@@ -9,8 +9,9 @@ const messages: Record<string, string> = {
   missing_env: "Supabase environment variables are missing.",
   not_allowed: "That email is not on the internal allowlist.",
   inactive: "Your internal account is not active.",
-  rate_limited: "A sign-in email was already sent. Wait one minute before requesting another.",
-  signin_failed: "Supabase could not send the sign-in email."
+  rate_limited:
+    "A sign-in email was already sent. Wait one minute before requesting another.",
+  signin_failed: "Supabase could not send the sign-in email.",
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -24,20 +25,33 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <p className="eyebrow">KSHR Internal</p>
         <h1>Sign in</h1>
         <p className="muted">
-          Use an allowlisted email address. We will send a Supabase magic link.
+          Use your KSHR email. We&apos;ll send a one-time sign-in link.
         </p>
 
         {!isEnvConfigured() ? (
-          <p className="alert">Set Supabase environment variables before signing in.</p>
+          <p className="alert">
+            Set Supabase environment variables before signing in.
+          </p>
         ) : null}
 
-        {error ? <p className="alert">{messages[error] ?? "Unable to sign in."}</p> : null}
-        {sent ? <p className="success">Check your email for the sign-in link.</p> : null}
+        {error ? (
+          <p className="alert">{messages[error] ?? "Unable to sign in."}</p>
+        ) : null}
+        {sent ? (
+          <p className="success">Check your email for the sign-in link.</p>
+        ) : null}
 
         <form action={signInWithEmail} className="form-stack">
           <label>
-            Email
-            <input name="email" type="email" placeholder="you@kshr.ai" required />
+            Work email
+            <input
+              autoComplete="email"
+              autoFocus
+              name="email"
+              type="email"
+              placeholder="you@kshr.ai"
+              required
+            />
           </label>
           <button type="submit">Send magic link</button>
         </form>

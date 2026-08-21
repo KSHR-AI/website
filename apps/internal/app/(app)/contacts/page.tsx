@@ -14,83 +14,156 @@ export default async function ContactsPage() {
         <div>
           <p className="eyebrow">Relationships</p>
           <h1>Contacts</h1>
-          <p>People connected to companies, diligence, and portfolio work.</p>
+          <p>People connected to diligence and portfolio work.</p>
         </div>
       </header>
 
-      <section className="grid two">
-        <article className="panel">
-          <h2>Add contact</h2>
-          <form action={createContact} className="form-stack">
-            <div className="form-grid">
-              <label>
-                First name
-                <input name="first_name" required />
-              </label>
-              <label>
-                Last name
-                <input name="last_name" />
-              </label>
-              <label>
-                Email
-                <input name="email" type="email" />
-              </label>
-              <label>
-                Phone
-                <input name="phone" />
-              </label>
-              <label>
-                Title
-                <input name="title" />
-              </label>
-              <label>
-                LinkedIn
-                <input name="linkedin_url" />
-              </label>
-            </div>
-            <button type="submit">Create contact</button>
-          </form>
-        </article>
-
-        <article className="panel">
-          <h2>Contact index</h2>
-          <div className="record-list">
-            {(contacts ?? []).map((contact) => (
-              <form action={updateContact} className="record-item form-stack" key={contact.id}>
-                <input name="id" type="hidden" value={contact.id} />
+      <section className="sheet-toolbar">
+        <div className="toolbar-actions">
+          <details className="action-panel">
+            <summary>New contact</summary>
+            <div className="action-panel-body">
+              <form action={createContact} className="form-stack">
                 <div className="form-grid">
                   <label>
                     First name
-                    <input name="first_name" defaultValue={contact.first_name} required />
+                    <input name="first_name" required />
                   </label>
                   <label>
                     Last name
-                    <input name="last_name" defaultValue={contact.last_name ?? ""} />
+                    <input name="last_name" />
                   </label>
                   <label>
                     Email
-                    <input name="email" type="email" defaultValue={contact.email ?? ""} />
+                    <input name="email" type="email" />
                   </label>
                   <label>
                     Phone
-                    <input name="phone" defaultValue={contact.phone ?? ""} />
+                    <input name="phone" />
                   </label>
                   <label>
                     Title
-                    <input name="title" defaultValue={contact.title ?? ""} />
+                    <input name="title" />
                   </label>
                   <label>
                     LinkedIn
-                    <input name="linkedin_url" defaultValue={contact.linkedin_url ?? ""} />
+                    <input name="linkedin_url" />
                   </label>
                 </div>
-                <button className="button secondary" type="submit">
-                  Save contact
-                </button>
+                <button type="submit">Create contact</button>
               </form>
+            </div>
+          </details>
+          <span className="record-meta">{contacts?.length ?? 0} rows</span>
+        </div>
+      </section>
+
+      <section className="table-wrap">
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Title</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>LinkedIn</th>
+              <th>Edit</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(contacts ?? []).map((contact) => (
+              <tr key={contact.id}>
+                <td className="record-title">
+                  {contact.first_name} {contact.last_name}
+                </td>
+                <td>{contact.title ?? "—"}</td>
+                <td>
+                  {contact.email ? (
+                    <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+                <td>{contact.phone ?? "—"}</td>
+                <td>
+                  {contact.linkedin_url ? (
+                    <a
+                      href={contact.linkedin_url}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      Open profile
+                    </a>
+                  ) : (
+                    "—"
+                  )}
+                </td>
+                <td>
+                  <details className="row-editor">
+                    <summary>Edit</summary>
+                    <form action={updateContact} className="form-stack">
+                      <input name="id" type="hidden" value={contact.id} />
+                      <div className="form-grid">
+                        <label>
+                          First name
+                          <input
+                            name="first_name"
+                            defaultValue={contact.first_name}
+                            required
+                          />
+                        </label>
+                        <label>
+                          Last name
+                          <input
+                            name="last_name"
+                            defaultValue={contact.last_name ?? ""}
+                          />
+                        </label>
+                        <label>
+                          Email
+                          <input
+                            name="email"
+                            type="email"
+                            defaultValue={contact.email ?? ""}
+                          />
+                        </label>
+                        <label>
+                          Phone
+                          <input
+                            name="phone"
+                            defaultValue={contact.phone ?? ""}
+                          />
+                        </label>
+                        <label>
+                          Title
+                          <input
+                            name="title"
+                            defaultValue={contact.title ?? ""}
+                          />
+                        </label>
+                        <label>
+                          LinkedIn
+                          <input
+                            name="linkedin_url"
+                            defaultValue={contact.linkedin_url ?? ""}
+                          />
+                        </label>
+                      </div>
+                      <button type="submit">Save contact</button>
+                    </form>
+                  </details>
+                </td>
+              </tr>
             ))}
-          </div>
-        </article>
+            {(contacts ?? []).length === 0 ? (
+              <tr>
+                <td colSpan={6}>
+                  Add the first contact to start the relationship index.
+                </td>
+              </tr>
+            ) : null}
+          </tbody>
+        </table>
       </section>
     </>
   );

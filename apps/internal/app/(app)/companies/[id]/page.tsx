@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import {
@@ -10,9 +11,14 @@ import {
   updateInteraction,
   updateNote,
   updateTask,
-  updateCompany
+  updateCompany,
 } from "@/app/(app)/actions";
-import { formatDate, formatMoney, oneRelation, toDateTimeInputValue } from "@/lib/format";
+import {
+  formatDate,
+  formatMoney,
+  oneRelation,
+  toDateTimeInputValue,
+} from "@/lib/format";
 import { requireActiveUser } from "@/lib/supabase/server";
 
 type CompanyPageProps = {
@@ -33,16 +39,46 @@ export default async function CompanyDetailPage({ params }: CompanyPageProps) {
     interactionsResult,
     investmentsResult,
     metricsResult,
-    documentsResult
+    documentsResult,
   ] = await Promise.all([
     supabase.from("companies").select("*").eq("id", id).single(),
-    supabase.from("company_contacts").select("relationship,is_primary,contacts(id,first_name,last_name,email,title)").eq("company_id", id),
-    supabase.from("notes").select("id,body,created_at").eq("entity_type", "company").eq("entity_id", id).order("created_at", { ascending: false }),
-    supabase.from("tasks").select("id,title,status,due_at").eq("entity_type", "company").eq("entity_id", id).order("due_at", { ascending: true }),
-    supabase.from("interactions").select("id,kind,summary,notes,occurred_at").eq("company_id", id).order("occurred_at", { ascending: false }),
-    supabase.from("investments").select("id,amount,currency,status,invested_on,funds(name),rounds(name)").eq("company_id", id),
-    supabase.from("portfolio_metrics").select("id,metric_name,metric_value,metric_text,measured_on").eq("company_id", id).order("measured_on", { ascending: false }),
-    supabase.from("documents").select("id,title,storage_path,mime_type,created_at").eq("company_id", id).order("created_at", { ascending: false })
+    supabase
+      .from("company_contacts")
+      .select(
+        "relationship,is_primary,contacts(id,first_name,last_name,email,title)",
+      )
+      .eq("company_id", id),
+    supabase
+      .from("notes")
+      .select("id,body,created_at")
+      .eq("entity_type", "company")
+      .eq("entity_id", id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("tasks")
+      .select("id,title,status,due_at")
+      .eq("entity_type", "company")
+      .eq("entity_id", id)
+      .order("due_at", { ascending: true }),
+    supabase
+      .from("interactions")
+      .select("id,kind,summary,notes,occurred_at")
+      .eq("company_id", id)
+      .order("occurred_at", { ascending: false }),
+    supabase
+      .from("investments")
+      .select("id,amount,currency,status,invested_on,funds(name),rounds(name)")
+      .eq("company_id", id),
+    supabase
+      .from("portfolio_metrics")
+      .select("id,metric_name,metric_value,metric_text,measured_on")
+      .eq("company_id", id)
+      .order("measured_on", { ascending: false }),
+    supabase
+      .from("documents")
+      .select("id,title,storage_path,mime_type,created_at")
+      .eq("company_id", id)
+      .order("created_at", { ascending: false }),
   ]);
 
   if (companyResult.error || !companyResult.data) {
@@ -55,82 +91,97 @@ export default async function CompanyDetailPage({ params }: CompanyPageProps) {
     <>
       <header className="page-header">
         <div>
-          <p className="eyebrow">Company</p>
+          <p className="eyebrow">
+            <Link href="/companies">Companies</Link> / Company
+          </p>
           <h1>{company.name}</h1>
           <p>{company.description ?? "No description yet."}</p>
         </div>
         <span className="pill">{company.stage}</span>
       </header>
 
-      <section className="grid two">
-        <article className="panel">
-          <h2>Edit company</h2>
-          <form action={updateCompany} className="form-stack">
-            <input name="id" type="hidden" value={company.id} />
-            <div className="form-grid">
+      <section className="action-tray company-actions">
+        <details className="action-panel">
+          <summary>Edit company</summary>
+          <div className="action-panel-body">
+            <form action={updateCompany} className="form-stack">
+              <input name="id" type="hidden" value={company.id} />
+              <div className="form-grid">
+                <label>
+                  Name
+                  <input name="name" defaultValue={company.name} required />
+                </label>
+                <label>
+                  Website
+                  <input name="website" defaultValue={company.website ?? ""} />
+                </label>
+                <label>
+                  Stage
+                  <select name="stage" defaultValue={company.stage}>
+                    {stages.map((stage) => (
+                      <option key={stage} value={stage}>
+                        {stage}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Founded year
+                  <input
+                    name="founded_year"
+                    defaultValue={company.founded_year ?? ""}
+                  />
+                </label>
+              </div>
               <label>
-                Name
-                <input name="name" defaultValue={company.name} required />
+                Description
+                <textarea
+                  name="description"
+                  defaultValue={company.description ?? ""}
+                />
               </label>
-              <label>
-                Website
-                <input name="website" defaultValue={company.website ?? ""} />
-              </label>
-              <label>
-                Stage
-                <select name="stage" defaultValue={company.stage}>
-                  {stages.map((stage) => (
-                    <option key={stage} value={stage}>
-                      {stage}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Founded year
-                <input name="founded_year" defaultValue={company.founded_year ?? ""} />
-              </label>
-            </div>
-            <label>
-              Description
-              <textarea name="description" defaultValue={company.description ?? ""} />
-            </label>
-            <button type="submit">Save company</button>
-          </form>
-        </article>
+              <button type="submit">Save company</button>
+            </form>
+          </div>
+        </details>
 
-        <article className="panel">
-          <h2>Add contact</h2>
-          <form action={createCompanyContact} className="form-stack">
-            <input name="company_id" type="hidden" value={company.id} />
-            <div className="form-grid">
+        <details className="action-panel">
+          <summary>Add contact</summary>
+          <div className="action-panel-body">
+            <form action={createCompanyContact} className="form-stack">
+              <input name="company_id" type="hidden" value={company.id} />
+              <div className="form-grid">
+                <label>
+                  First name
+                  <input name="first_name" required />
+                </label>
+                <label>
+                  Last name
+                  <input name="last_name" />
+                </label>
+                <label>
+                  Email
+                  <input name="email" type="email" />
+                </label>
+                <label>
+                  Title
+                  <input name="title" />
+                </label>
+              </div>
               <label>
-                First name
-                <input name="first_name" required />
+                Relationship
+                <input
+                  name="relationship"
+                  placeholder="Founder, CFO, investor..."
+                />
               </label>
-              <label>
-                Last name
-                <input name="last_name" />
-              </label>
-              <label>
-                Email
-                <input name="email" type="email" />
-              </label>
-              <label>
-                Title
-                <input name="title" />
-              </label>
-            </div>
-            <label>
-              Relationship
-              <input name="relationship" placeholder="Founder, CFO, investor..." />
-            </label>
-            <button type="submit">Add and link contact</button>
-          </form>
-        </article>
+              <button type="submit">Add and link contact</button>
+            </form>
+          </div>
+        </details>
       </section>
 
-      <section className="grid two" style={{ marginTop: 16 }}>
+      <section className="grid two company-workspace" style={{ marginTop: 20 }}>
         <article className="panel">
           <h2>Contacts</h2>
           <div className="record-list">
@@ -138,12 +189,17 @@ export default async function CompanyDetailPage({ params }: CompanyPageProps) {
               const contact = oneRelation(row.contacts);
 
               return (
-                <div className="record-item" key={contact?.id ?? row.relationship}>
+                <div
+                  className="record-item"
+                  key={contact?.id ?? row.relationship}
+                >
                   <span className="record-title">
                     {contact?.first_name} {contact?.last_name}
                   </span>
                   <span className="record-meta">
-                    {contact?.title ?? "No title"} · {contact?.email ?? "No email"} · {row.relationship ?? "No relationship"}
+                    {contact?.title ?? "No title"} ·{" "}
+                    {contact?.email ?? "No email"} ·{" "}
+                    {row.relationship ?? "No relationship"}
                   </span>
                 </div>
               );
@@ -151,105 +207,123 @@ export default async function CompanyDetailPage({ params }: CompanyPageProps) {
           </div>
         </article>
 
-        <article className="panel">
-          <h2>Add interaction</h2>
-          <form action={createInteraction} className="form-stack">
-            <input name="company_id" type="hidden" value={company.id} />
-            <div className="form-grid">
+        <details className="action-panel">
+          <summary>Log interaction</summary>
+          <div className="action-panel-body">
+            <form action={createInteraction} className="form-stack">
+              <input name="company_id" type="hidden" value={company.id} />
+              <div className="form-grid">
+                <label>
+                  Kind
+                  <select name="kind" defaultValue="meeting">
+                    <option value="meeting">meeting</option>
+                    <option value="call">call</option>
+                    <option value="email">email</option>
+                    <option value="note">note</option>
+                    <option value="other">other</option>
+                  </select>
+                </label>
+                <label>
+                  Occurred at
+                  <input name="occurred_at" type="datetime-local" />
+                </label>
+              </div>
               <label>
-                Kind
-                <select name="kind" defaultValue="meeting">
-                  <option value="meeting">meeting</option>
-                  <option value="call">call</option>
-                  <option value="email">email</option>
-                  <option value="note">note</option>
-                  <option value="other">other</option>
-                </select>
+                Summary
+                <input name="summary" required />
               </label>
               <label>
-                Occurred at
-                <input name="occurred_at" type="datetime-local" />
+                Notes
+                <textarea name="notes" />
               </label>
-            </div>
-            <label>
-              Summary
-              <input name="summary" required />
-            </label>
-            <label>
-              Notes
-              <textarea name="notes" />
-            </label>
-            <button type="submit">Add interaction</button>
-          </form>
-        </article>
+              <button type="submit">Add interaction</button>
+            </form>
+          </div>
+        </details>
 
         <article className="panel">
           <h2>Notes</h2>
-          <form action={createNote} className="form-stack">
-            <input name="entity_type" type="hidden" value="company" />
-            <input name="entity_id" type="hidden" value={company.id} />
-            <textarea name="body" placeholder="Add a note..." required />
-            <button type="submit">Add note</button>
-          </form>
-          <div className="record-list" style={{ marginTop: 16 }}>
+          <details className="embedded-editor">
+            <summary>Add note</summary>
+            <form action={createNote} className="form-stack">
+              <input name="entity_type" type="hidden" value="company" />
+              <input name="entity_id" type="hidden" value={company.id} />
+              <textarea name="body" placeholder="Add a note..." required />
+              <button type="submit">Add note</button>
+            </form>
+          </details>
+          <div className="record-list" style={{ marginTop: 12 }}>
             {(notesResult.data ?? []).map((note) => (
-              <form action={updateNote} className="record-item form-stack" key={note.id}>
-                <input name="id" type="hidden" value={note.id} />
-                <input name="entity_type" type="hidden" value="company" />
-                <input name="entity_id" type="hidden" value={company.id} />
-                <textarea name="body" defaultValue={note.body} required />
-                <span className="record-meta">{formatDate(note.created_at)}</span>
-                <button className="button secondary" type="submit">
-                  Save note
-                </button>
-              </form>
+              <details className="row-editor record-item" key={note.id}>
+                <summary>
+                  {formatDate(note.created_at)} · {note.body.slice(0, 72)}
+                  {note.body.length > 72 ? "…" : ""}
+                </summary>
+                <form action={updateNote} className="form-stack">
+                  <input name="id" type="hidden" value={note.id} />
+                  <input name="entity_type" type="hidden" value="company" />
+                  <input name="entity_id" type="hidden" value={company.id} />
+                  <textarea name="body" defaultValue={note.body} required />
+                  <button type="submit">Save note</button>
+                </form>
+              </details>
             ))}
           </div>
         </article>
 
         <article className="panel">
           <h2>Tasks</h2>
-          <form action={createTask} className="form-stack">
-            <input name="entity_type" type="hidden" value="company" />
-            <input name="entity_id" type="hidden" value={company.id} />
-            <label>
-              Title
-              <input name="title" required />
-            </label>
-            <label>
-              Due
-              <input name="due_at" type="datetime-local" />
-            </label>
-            <button type="submit">Add task</button>
-          </form>
-          <div className="record-list" style={{ marginTop: 16 }}>
+          <details className="embedded-editor">
+            <summary>Add task</summary>
+            <form action={createTask} className="form-stack">
+              <input name="entity_type" type="hidden" value="company" />
+              <input name="entity_id" type="hidden" value={company.id} />
+              <label>
+                Title
+                <input name="title" required />
+              </label>
+              <label>
+                Due
+                <input name="due_at" type="datetime-local" />
+              </label>
+              <button type="submit">Add task</button>
+            </form>
+          </details>
+          <div className="record-list" style={{ marginTop: 12 }}>
             {(tasksResult.data ?? []).map((task) => (
-              <form action={updateTask} className="record-item form-stack" key={task.id}>
-                <input name="id" type="hidden" value={task.id} />
-                <input name="entity_type" type="hidden" value="company" />
-                <input name="entity_id" type="hidden" value={company.id} />
-                <div className="form-grid">
-                  <label>
-                    Title
-                    <input name="title" defaultValue={task.title} required />
-                  </label>
-                  <label>
-                    Status
-                    <select name="status" defaultValue={task.status}>
-                      <option value="open">open</option>
-                      <option value="done">done</option>
-                      <option value="archived">archived</option>
-                    </select>
-                  </label>
-                  <label>
-                    Due
-                    <input name="due_at" type="datetime-local" defaultValue={toDateTimeInputValue(task.due_at)} />
-                  </label>
-                </div>
-                <button className="button secondary" type="submit">
-                  Save task
-                </button>
-              </form>
+              <details className="row-editor record-item" key={task.id}>
+                <summary>
+                  {task.title} · {task.status} · {formatDate(task.due_at)}
+                </summary>
+                <form action={updateTask} className="form-stack">
+                  <input name="id" type="hidden" value={task.id} />
+                  <input name="entity_type" type="hidden" value="company" />
+                  <input name="entity_id" type="hidden" value={company.id} />
+                  <div className="form-grid">
+                    <label>
+                      Title
+                      <input name="title" defaultValue={task.title} required />
+                    </label>
+                    <label>
+                      Status
+                      <select name="status" defaultValue={task.status}>
+                        <option value="open">open</option>
+                        <option value="done">done</option>
+                        <option value="archived">archived</option>
+                      </select>
+                    </label>
+                    <label>
+                      Due
+                      <input
+                        name="due_at"
+                        type="datetime-local"
+                        defaultValue={toDateTimeInputValue(task.due_at)}
+                      />
+                    </label>
+                  </div>
+                  <button type="submit">Save task</button>
+                </form>
+              </details>
             ))}
           </div>
         </article>
@@ -258,41 +332,54 @@ export default async function CompanyDetailPage({ params }: CompanyPageProps) {
           <h2>Interactions</h2>
           <div className="record-list">
             {(interactionsResult.data ?? []).map((interaction) => (
-              <form action={updateInteraction} className="record-item form-stack" key={interaction.id}>
-                <input name="id" type="hidden" value={interaction.id} />
-                <input name="company_id" type="hidden" value={company.id} />
-                <div className="form-grid">
+              <details className="row-editor record-item" key={interaction.id}>
+                <summary>
+                  {interaction.kind} · {formatDate(interaction.occurred_at)} ·{" "}
+                  {interaction.summary}
+                </summary>
+                <form action={updateInteraction} className="form-stack">
+                  <input name="id" type="hidden" value={interaction.id} />
+                  <input name="company_id" type="hidden" value={company.id} />
+                  <div className="form-grid">
+                    <label>
+                      Kind
+                      <select name="kind" defaultValue={interaction.kind}>
+                        <option value="meeting">meeting</option>
+                        <option value="call">call</option>
+                        <option value="email">email</option>
+                        <option value="note">note</option>
+                        <option value="other">other</option>
+                      </select>
+                    </label>
+                    <label>
+                      Occurred at
+                      <input
+                        name="occurred_at"
+                        type="datetime-local"
+                        defaultValue={toDateTimeInputValue(
+                          interaction.occurred_at,
+                        )}
+                      />
+                    </label>
+                  </div>
                   <label>
-                    Kind
-                    <select name="kind" defaultValue={interaction.kind}>
-                      <option value="meeting">meeting</option>
-                      <option value="call">call</option>
-                      <option value="email">email</option>
-                      <option value="note">note</option>
-                      <option value="other">other</option>
-                    </select>
-                  </label>
-                  <label>
-                    Occurred at
+                    Summary
                     <input
-                      name="occurred_at"
-                      type="datetime-local"
-                      defaultValue={toDateTimeInputValue(interaction.occurred_at)}
+                      name="summary"
+                      defaultValue={interaction.summary}
+                      required
                     />
                   </label>
-                </div>
-                <label>
-                  Summary
-                  <input name="summary" defaultValue={interaction.summary} required />
-                </label>
-                <label>
-                  Notes
-                  <textarea name="notes" defaultValue={interaction.notes ?? ""} />
-                </label>
-                <button className="button secondary" type="submit">
-                  Save interaction
-                </button>
-              </form>
+                  <label>
+                    Notes
+                    <textarea
+                      name="notes"
+                      defaultValue={interaction.notes ?? ""}
+                    />
+                  </label>
+                  <button type="submit">Save interaction</button>
+                </form>
+              </details>
             ))}
           </div>
         </article>
@@ -306,9 +393,12 @@ export default async function CompanyDetailPage({ params }: CompanyPageProps) {
 
               return (
                 <div className="record-item" key={investment.id}>
-                  <span className="record-title">{formatMoney(investment.amount, investment.currency)}</span>
+                  <span className="record-title">
+                    {formatMoney(investment.amount, investment.currency)}
+                  </span>
                   <span className="record-meta">
-                    {fund?.name ?? "No fund"} · {round?.name ?? "No round"} · {investment.status}
+                    {fund?.name ?? "No fund"} · {round?.name ?? "No round"} ·{" "}
+                    {investment.status}
                   </span>
                 </div>
               );
@@ -317,35 +407,43 @@ export default async function CompanyDetailPage({ params }: CompanyPageProps) {
         </article>
 
         <article className="panel">
-          <h2>Add metric</h2>
-          <form action={createMetric} className="form-stack">
-            <input name="company_id" type="hidden" value={company.id} />
-            <div className="form-grid">
-              <label>
-                Metric
-                <input name="metric_name" placeholder="ARR, Revenue, Headcount" required />
-              </label>
-              <label>
-                Date
-                <input name="measured_on" type="date" />
-              </label>
-              <label>
-                Numeric value
-                <input name="metric_value" inputMode="decimal" />
-              </label>
-              <label>
-                Text value
-                <input name="metric_text" />
-              </label>
-            </div>
-            <button type="submit">Add metric</button>
-          </form>
-          <div className="record-list" style={{ marginTop: 16 }}>
+          <h2>Metrics</h2>
+          <details className="embedded-editor">
+            <summary>Add metric</summary>
+            <form action={createMetric} className="form-stack">
+              <input name="company_id" type="hidden" value={company.id} />
+              <div className="form-grid">
+                <label>
+                  Metric
+                  <input
+                    name="metric_name"
+                    placeholder="ARR, Revenue, Headcount"
+                    required
+                  />
+                </label>
+                <label>
+                  Date
+                  <input name="measured_on" type="date" />
+                </label>
+                <label>
+                  Numeric value
+                  <input name="metric_value" inputMode="decimal" />
+                </label>
+                <label>
+                  Text value
+                  <input name="metric_text" />
+                </label>
+              </div>
+              <button type="submit">Add metric</button>
+            </form>
+          </details>
+          <div className="record-list" style={{ marginTop: 12 }}>
             {(metricsResult.data ?? []).map((metric) => (
               <div className="record-item" key={metric.id}>
                 <span className="record-title">{metric.metric_name}</span>
                 <span className="record-meta">
-                  {metric.metric_text ?? metric.metric_value ?? "No value"} · {formatDate(metric.measured_on)}
+                  {metric.metric_text ?? metric.metric_value ?? "No value"} ·{" "}
+                  {formatDate(metric.measured_on)}
                 </span>
               </div>
             ))}
@@ -354,19 +452,26 @@ export default async function CompanyDetailPage({ params }: CompanyPageProps) {
 
         <article className="panel">
           <h2>Documents</h2>
-          <form action={createDocumentRecord} className="form-stack">
-            <input name="company_id" type="hidden" value={company.id} />
-            <label>
-              Title
-              <input name="title" required />
-            </label>
-            <label>
-              Storage path
-              <input name="storage_path" placeholder="internal-documents/company/file.pdf" required />
-            </label>
-            <button type="submit">Add document record</button>
-          </form>
-          <div className="record-list" style={{ marginTop: 16 }}>
+          <details className="embedded-editor">
+            <summary>Add document</summary>
+            <form action={createDocumentRecord} className="form-stack">
+              <input name="company_id" type="hidden" value={company.id} />
+              <label>
+                Title
+                <input name="title" required />
+              </label>
+              <label>
+                Storage path
+                <input
+                  name="storage_path"
+                  placeholder="internal-documents/company/file.pdf"
+                  required
+                />
+              </label>
+              <button type="submit">Add document</button>
+            </form>
+          </details>
+          <div className="record-list" style={{ marginTop: 12 }}>
             {(documentsResult.data ?? []).map((document) => (
               <div className="record-item" key={document.id}>
                 <span className="record-title">{document.title}</span>
