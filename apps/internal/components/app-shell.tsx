@@ -22,7 +22,6 @@ export async function AppShell({
         <div className="workspace-account">
           <span className="account-copy">
             <strong>{appUser.email}</strong>
-            <small>{appUser.role}</small>
           </span>
           <form action={signOut}>
             <button className="button tertiary compact" type="submit">

@@ -4,7 +4,6 @@ export function BrandMark() {
   return (
     <Link href="/" className="brand-mark" aria-label="KSHR internal home">
       <span>KSHR</span>
-      <small>Investments</small>
     </Link>
   );
 }

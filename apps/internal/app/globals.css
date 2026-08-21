@@ -100,7 +100,6 @@ button {
 .brand-mark {
   align-items: baseline;
   display: inline-flex;
-  gap: 8px;
   white-space: nowrap;
 }
 
@@ -109,12 +108,6 @@ button {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.12em;
-}
-
-.brand-mark small {
-  color: var(--gray-500);
-  font-size: 12px;
-  font-weight: 400;
 }
 
 .nav-list {
@@ -166,12 +159,6 @@ button {
 .account-copy strong {
   font-size: 12px;
   font-weight: 500;
-}
-
-.account-copy small {
-  color: var(--gray-500);
-  font-size: 11px;
-  text-transform: capitalize;
 }
 
 .main-area {
@@ -844,7 +831,6 @@ button.tertiary:hover {
     padding: 0 12px;
   }
 
-  .brand-mark small,
   .account-copy {
     display: none;
   }
