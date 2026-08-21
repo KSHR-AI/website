@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ redirectTo: "/login?error=signin_failed" }, { status: 400 });
   }
 
-  const appUser = await ensureAppUser({ id: user.id, email: user.email });
+  const appUser = await ensureAppUser({ id: user.id, email: user.email }, supabase);
 
   if (!appUser) {
     await supabase.auth.signOut();

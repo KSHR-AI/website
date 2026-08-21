@@ -50,7 +50,10 @@ export function createServiceRoleClient() {
   });
 }
 
-export async function ensureAppUser(user: { id: string; email?: string | null }) {
+export async function ensureAppUser(
+  user: { id: string; email?: string | null },
+  authenticatedClient?: Awaited<ReturnType<typeof createSupabaseServerClient>>
+) {
   const email = user.email?.toLowerCase();
   const allowedEmails = getAllowedEmails();
 
@@ -58,16 +61,35 @@ export async function ensureAppUser(user: { id: string; email?: string | null })
     return null;
   }
 
+  if (authenticatedClient) {
+    const { data: sessionUser } = await authenticatedClient
+      .from("app_users")
+      .select("id,email,role,status")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (sessionUser) {
+      return sessionUser as AppUser;
+    }
+  }
+
   const serviceClient = createServiceRoleClient();
   if (!serviceClient) {
     return null;
   }
 
-  const { data: existingUser } = await serviceClient
+  const { data: existingUser, error: existingUserError } = await serviceClient
     .from("app_users")
     .select("id,email,role,status")
     .eq("id", user.id)
     .maybeSingle();
+
+  if (existingUserError) {
+    console.error("Unable to read internal app user with server credentials", {
+      code: existingUserError.code
+    });
+    return null;
+  }
 
   if (existingUser) {
     return existingUser as AppUser;
@@ -114,7 +136,7 @@ export async function requireActiveUser() {
     .eq("id", user.id)
     .maybeSingle();
 
-  const appUser = existingUser ?? (await ensureAppUser({ id: user.id, email }));
+  const appUser = existingUser ?? (await ensureAppUser({ id: user.id, email }, supabase));
 
   if (!appUser || appUser.status !== "active") {
     redirect("/login?error=inactive");

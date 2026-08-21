@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/login?error=signin_failed", request.url));
   }
 
-  const appUser = await ensureAppUser({ id: user.id, email: user.email });
+  const appUser = await ensureAppUser({ id: user.id, email: user.email }, supabase);
 
   if (!appUser) {
     await supabase.auth.signOut();

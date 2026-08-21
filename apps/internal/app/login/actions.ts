@@ -29,6 +29,14 @@ export async function signInWithEmail(formData: FormData) {
   });
 
   if (error) {
+    if (error.code === "over_email_send_rate_limit" || error.status === 429) {
+      redirect("/login?error=rate_limited");
+    }
+
+    console.error("Supabase magic-link request failed", {
+      code: error.code,
+      status: error.status
+    });
     redirect("/login?error=signin_failed");
   }
 

@@ -9,6 +9,7 @@ const messages: Record<string, string> = {
   missing_env: "Supabase environment variables are missing.",
   not_allowed: "That email is not on the internal allowlist.",
   inactive: "Your internal account is not active.",
+  rate_limited: "A sign-in email was already sent. Wait one minute before requesting another.",
   signin_failed: "Supabase could not send the sign-in email."
 };
 
