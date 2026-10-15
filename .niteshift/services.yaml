@@ -1,0 +1,19 @@
+services:
+  - name: internal
+    command: npm --workspace @kshr/internal run dev
+    port: 3000
+    cwd: apps/internal
+    environment:
+      - name: NEXT_PUBLIC_SUPABASE_URL
+        value: https://example.supabase.co
+      - name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        value: example-anon-key
+      - name: SUPABASE_SERVICE_ROLE_KEY
+        secret: SUPABASE_SERVICE_ROLE_KEY
+      - name: DATABASE_URL
+        secret: DATABASE_URL
+      - name: INTERNAL_ALLOWED_EMAILS
+        value: aman@kshr.ai
+    auth:
+      type: magic-dev-login-url
+      path: /login?returnTo={returnTo}
