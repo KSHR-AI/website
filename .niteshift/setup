@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$NITESHIFT_CHECKOUT_ROOT" && pwd)"
+
+# Install dependencies at the repo root if node_modules doesn't exist
+if [ ! -d "$ROOT/node_modules" ]; then
+  cd "$ROOT"
+  npm install
+fi
+
+# Set up .env.local if it doesn't already exist
+if [ ! -f "$ROOT/apps/internal/.env.local" ] && [ -f "$ROOT/apps/internal/.env.local.example" ]; then
+  cp "$ROOT/apps/internal/.env.local.example" "$ROOT/apps/internal/.env.local"
+fi
+
+# Run supabase db push if migrations exist and DATABASE_URL is configured
+if [ -f "$ROOT/apps/internal/supabase/migrations" ] && [ -f "$ROOT/apps/internal/.env.local" ]; then
+  cd "$ROOT"
+  set -a; [ -f .env.local ] && . .env.local; set +a
+  npm --workspace @kshr/internal run db:push 2>/dev/null || true
+fi
