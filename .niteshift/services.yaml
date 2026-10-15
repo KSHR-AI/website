@@ -1,0 +1,16 @@
+services:
+  - name: web
+    command: npm run internal:dev
+    port: 3000
+    cwd: .
+    environment:
+      - name: NEXT_PUBLIC_SUPABASE_URL
+        value: https://PROJECT_REF.supabase.co
+      - name: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        value: replace-with-anon-key
+      - name: DATABASE_URL
+        value: postgresql://postgres.PROJECT_REF:PASSWORD@aws-1-us-east-1.pooler.supabase.com:6543/postgres
+      - name: SUPABASE_SERVICE_ROLE_KEY
+        value: replace-with-service-role-key
+      - name: INTERNAL_ALLOWED_EMAILS
+        value: aman@kshr.ai
