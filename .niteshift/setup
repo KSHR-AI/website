@@ -1,0 +1,19 @@
+#!/bin/bash
+# Setup script for the KSHR internal app
+# Installs dependencies and prepares the environment
+
+set -e
+
+# Install dependencies if not already installed
+if ! command -v npm &> /dev/null; then
+    echo "npm not found, installing..."
+    npm install
+fi
+
+# Run database migrations if .env.local exists
+if [ -f ".env.local" ]; then
+    echo "Running database migrations..."
+    npm --workspace @kshr/internal run db:push
+fi
+
+echo "Setup complete."
